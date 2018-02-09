@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Eat cells smaller than you and don't get eaten by the bigger ones, as an MMO">
+    <meta name="keywords" content="agario, agar, io, cell, cells, virus, bacteria, blob, game, games, web game, html5, fun, flash">
+    <meta name="robots" content="index, follow">
+    <meta name="viewport" content="minimal-ui, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Cigar Client</title>
+    <link id="favicon" rel="icon" type="image/png" href="assets/img/favicon.png" />
+    <link href='assets/css/fonts.googleapis.css' rel='stylesheet' type='text/css'>
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/index.css" rel="stylesheet">
+    <script src="assets/js/jquery-1.11.3.min.js"></script>
+    <script src="assets/js/main_out.js"></script>
+	<script>
+		// Macro for shift split
+		function keydown(e) {
+		    if (16 == e.keyCode) for (var o = 0; o < 5; o++) setTimeout(split, 50 * o);
+		    if (65 == e.keyCode) for (var t = 0; t < 3; t++) setTimeout(split, 50 * t);
+		    if (68 == e.keyCode) split(), setTimeout(split, 50);
+		} /*global $*/
+		function split() {
+		    $("body").trigger($.Event("keydown", {
+		        keyCode: 32
+		    })),
+		    $("body").trigger($.Event("keyup", {
+		        keyCode: 32
+		    }));
+		}
+		window.addEventListener("keydown", keydown);
+	</script>
+</head>
+<body>
+    <div class="modal fade" id="inPageModal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 id="inPageModalTitle" class="modal-title">Failed to load!</h4>
+                </div>
+                <div id="inPageModalBody" class="modal-body">
+                    <p>Failed to load, please check your connection!</p>
+                    <div class="center">
+                        <div class="loader"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="overlays">
+        <div id="helloDialog">
+            <form role="form">
+                <div class="form-group">
+                    <h2 id="title">Cigar Client</h2>
+                </div>
+                <div class="form-group">
+                    <input id="nick" class="form-control save" data-box-id="0" placeholder="Nick" maxlength="15" />
+                    <select id="gamemode" class="form-control" onchange="setserver($(this).val());" required>
+                        <option selected disabled>Servers:</option>
+                        <option value="127.0.0.1:443">Local 443</option>
+                        <option value="multiogar-agarian.c9users.io:8081">MultiOgar</option>
+                    </select>
+                    <br clear="both" />
+                </div>
+                <div class="form-group">
+                    <!--div class="mb-10">
+                        <a data-toggle="modal" data-target="#inPageModal" onclick="openSkinsList();" class="btn-primary btn btn-info" role="button" style="width: 100%;">Skins Gallery</a>
+                    </div-->
+                    <button type="button" id="play-btn" onclick="play(document.getElementById('nick').value); return false;" class="btn btn-play btn-primary btn-needs-server">Play</button>
+                    <button onclick="$('#settings, #instructions').toggle(); return false;" class="btn btn-info btn-settings" id="settings-btn"><i class="glyphicon glyphicon-cog"></i></button>
+                    <br clear="both" />
+                </div>
+                <div id="settings" class="checkbox" style="display:none;">
+                    <div class="form-group" id="mainform">
+                        <button id="spectate-btn" onclick="spectate(); return false;" style="width: 100%" class="btn btn-warning btn-spectate btn-needs-server">Spectate
+                        </button>
+                        <br clear="both" />
+                    </div>
+                    <div style="margin: 6px;">
+                        <label><input type="checkbox" class="save" data-box-id="1" onchange="setSkins(!$(this).is(':checked'));"> No skins</label>
+                        <label><input type="checkbox" class="save" data-box-id="2" onchange="setNames(!$(this).is(':checked'));"> No names</label>
+                        <label><input type="checkbox" class="save" data-box-id="3" onchange="setDarkTheme($(this).is(':checked'));" checked> Dark theme</label>
+                        <label><input type="checkbox" class="save" data-box-id="4" onchange="setColors($(this).is(':checked'));"> No colors</label>
+                        <label><input type="checkbox" class="save" data-box-id="5" onchange="setShowMass($(this).is(':checked'));" checked> Show mass</label>
+                        <!--label><input type="checkbox" class="save" data-box-id="7" onchange="setChatHide($(this).is(':checked'));"> Hide chat</label-->
+                        <label><input type="checkbox" class="save" data-box-id="8" onchange="setMinimap($(this).is(':checked'));"> Hide minimap</label>
+                        <label><input type="checkbox" class="save" data-box-id="9" onchange="setCellBorder($(this).is(':checked'));" checked> Cell borders</label>
+                        <label><input type="checkbox" class="save" data-box-id="10" onchange="setGrid($(this).is(':checked'));"> Hide grid</label>
+                        <label><input type="checkbox" class="save" data-box-id="11" onchange="setZoom($(this).is(':checked'));"> Infinite zoom</label>
+                        <label><input type="checkbox" class="save" data-box-id="12" onchange="setTransparency($(this).is(':checked'));"> Transparent cells</label>
+                        <p> </p>
+                        <table>
+                        	<tr>
+                        		<td><label>LB Text Color</label>
+                        		<input class="form-control" id="lbColor" placeholder="Input HEX color" value="FFAAAA" style="width:180px;"></td>
+                        		<td><label>Name Text Color</label>
+                        		<input class="form-control" id="nameColor" placeholder="Input HEX color" value="FFFFFF" style="width:180px;"></td>
+                        	</tr>
+                        	<tr>
+                        		<td><label>Cell Border Color</label>
+                        		<input class="form-control" id="cellBorderColor" placeholder="Input HEX color" value="000000" style="width:180px;"></td>
+                        		<td><label>Cell Border Size</label>
+                        		<input class="form-control" id="cellBorderSize" placeholder="Size Value (max = 50)" value="5" type="number" min="0" max="50" style="width:180px;"></td>
+                        	</tr>
+                        </table>
+                    </div>
+                </div>
+            </form>
+            <div id="instructions">
+                <hr/>
+				<center>
+					<span class="text-muted">
+            			Move your <b>Mouse</b> to control your cell<br/>
+            			Press <b>Space</b> to split<br/>
+            			Press <b>W</b> to eject mass<br/>
+            			Press <b>E</b> to split minions<br/>
+            			Press <b>R</b> to make minions eject mass<br/>
+            			Press <b>T</b> to freeze/unfreeze minions<br/>
+            			Press <b>P</b> to make minions collect food<br/>
+            		    Press <b>Q</b> (in-game) to make minions follow your cell<br/>
+                	</span>
+                </center>
+            </div>
+            <hr />
+            <div id="footer">
+                <a href="https://github.com/CigarProject/Cigar" class="text-muted">GitHub - CigarProject</a>
+            </div>
+        </div>
+    </div>
+    <div id="connecting">
+        <div style="width: 350px; background-color: #FFFFFF; margin: 100px auto; border-radius: 15px; padding: 5px 15px 5px 15px;">
+            <h2>Connecting</h2>
+            <p> If you cannot connect to the server, check if you have some antivirus or firewall blocking the connection.</p>
+        </div>
+    </div>
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <input type="text" id="chat_textbox" placeholder="Press enter to chat" maxlength="200" />
+    <div style="font-family:'Ubuntu'">&nbsp;</div>
+    <script src="assets/js/bootstrap.min.js"></script>
+</body>
+</html>
