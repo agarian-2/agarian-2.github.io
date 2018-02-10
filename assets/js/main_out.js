@@ -488,7 +488,7 @@
         showMass: 1,
         showNames: 1,
         showLeaderboard: 1,
-        showChat: 1,
+        hideChat: 0,
         showTextOutline: 1,
         showColor: 1,
         showSkins: 1,
@@ -579,21 +579,17 @@
         ctx.translate(-mainCanvas.width / 2, -mainCanvas.height / 2);
     }
     function drawChat() {
-        if (chat.messages.length === 0 && settings.showChat) return chat.visible = 0;
-        chat.visible = 1;
+        if (chat.messages.length === 0 && !settings.hideChat) return;
         var canvas = chat.canvas;
         var ctx = canvas.getContext("2d");
         var latestMessages = chat.messages.slice(-15);
         var lines = [];
         for (var i = 0, len = latestMessages.length; i < len; i++) {
             lines.push([
-                {
-                    text: latestMessages[i].name,
-                    color: latestMessages[i].color
-                }, {
-                    text: " " + latestMessages[i].message,
-                    color: settings.darkTheme ? "#FFF" : "#000"
-                }
+                {text: latestMessages[i].name,
+                color: latestMessages[i].color},
+                {text: " " + latestMessages[i].message,
+                color: settings.darkTheme ? "#FFF" : "#000"}
             ]);
         }
         var width = 0;
@@ -703,7 +699,8 @@
         mainCtx.strokeStyle = settings.darkTheme ? "#AAA" : "#000";
         mainCtx.globalAlpha = 0.2;
         var step = 50, i,
-            cW = mainCanvas.width / cameraZ, cH = mainCanvas.height / cameraZ,
+            cW = mainCanvas.width / cameraZ,
+            cH = mainCanvas.height / cameraZ,
             startLeft = (-cameraX + cW / 2) % step,
             startTop = (-cameraY + cH / 2) % step;
         scaleForth(mainCtx);
@@ -845,13 +842,8 @@
         mainCtx.fillText(gameStatsText, 2, height);
         height += 24;
         if (stats.visible) mainCtx.drawImage(stats.canvas, 2, height);
-        if (leaderboard.visible) {
-            mainCtx.drawImage(
-                leaderboard.canvas,
-                mainCanvas.width / viewMult - 10 - leaderboard.canvas.width,
-            10);
-        }
-        if (chat.visible || isTyping || 1) {
+        if (leaderboard.visible) mainCtx.drawImage(leaderboard.canvas, mainCanvas.width / viewMult - 10 - leaderboard.canvas.width, 10);
+        if (!settings.hideChat && (isTyping || 1)) {
             mainCtx.globalAlpha = isTyping ? 1 : Math.max(1000 - syncAppStamp + chat.waitUntil, 0) / 1000;
             mainCtx.drawImage(chat.canvas, 10 / viewMult, (mainCanvas.height - 55) / viewMult - chat.canvas.height);
             mainCtx.globalAlpha = 1;
@@ -1165,7 +1157,7 @@
             switch (event.keyCode) {
                 case 13: // Enter
                     if (escOverlayShown) break;
-                    if (!settings.showChat) break;
+                    if (settings.hideChat) break;
                     if (isTyping) {
                         chatBox.blur();
                         var chattxt = chatBox.value;
@@ -1249,7 +1241,7 @@
                     pressed.h = 1;
                     break;
                 case 90: // Z
-                    if (isTyping || escOverlayShown || pressed.z) break;
+                    if (isTyping || escOverlayShown) break;
                     wsSend(UINT8_CACHE[35]);
                     pressed.z = 1;
                     break;
@@ -1269,12 +1261,12 @@
                     pressed.c = 1;
                     break;
                 case 71: // J
-                    if (isTyping || escOverlayShown) break;
+                    if (isTyping || escOverlayShown || pressed.j) break;
                     wsSend(UINT8_CACHE[39]);
                     pressed.j = 1;
                     break;
                 case 74: // G
-                    if (isTyping || escOverlayShown || pressed.g) break;
+                    if (isTyping || escOverlayShown) break;
                     wsSend(UINT8_CACHE[40]);
                     pressed.g = 1;
                     break;
@@ -1303,82 +1295,31 @@
         };
         wHandle.onkeyup = function(event) {
             switch (event.keyCode) {
-                case 32: // Space
-                    pressed.space = 0;
-                    break;
-                case 87: // W
-                    pressed.w = 0;
-                    break;
-                case 81: // Q
-                    if (pressed.q) wsSend(UINT8_CACHE[19]);
-                    pressed.q = 0;
-                    break;
-                case 69: // E
-                    pressed.e = 0;
-                    break;
-                case 82: // R
-                    pressed.r = 0;
-                    break;
-                case 84: // T
-                    pressed.t = 0;
-                    break;
-                case 80: // P
-                    pressed.p = 0;
-                    break;
-                case 79: // O
-                    pressed.o = 0;
-                    break;
-                case 77: // M
-                    pressed.m = 0;
-                    break;
-                case 73: // I
-                    pressed.i = 0;
-                    break;
-                case 89: // Y
-                    pressed.y = 0;
-                    break;
-                case 85: // U
-                    pressed.u = 0;
-                    break;
-                case 75: // K
-                    pressed.k = 0;
-                    break;
-                case 76: // L
-                    pressed.l = 0;
-                    break;
-                case 72: // H
-                    pressed.h = 0;
-                    break;
-                case 90: // Z
-                    pressed.z = 0;
-                    break;
-                case 88: // X
-                    pressed.x = 0;
-                    break;
-                case 83: // S
-                    pressed.s = 0;
-                    break;
-                case 67: // C
-                    pressed.c = 0;
-                    break;
-                case 74: // G
-                    pressed.g = 0;
-                    break;
-                case 71: // J
-                    pressed.j = 0;
-                    break;
-                case 66: // B
-                    pressed.b = 0;
-                    break;
-                case 86: // V
-                    pressed.v = 0;
-                    break;
-                case 78: // N
-                    pressed.n = 0;
-                    break;
-                case 27: // Esc
-                    pressed.esc = 0;
-                    break;
+                case 32: pressed.space = 0; break; // Space
+                case 87: pressed.w = 0; break; // W
+                case 81: if (pressed.q) wsSend(UINT8_CACHE[19]); pressed.q = 0; break; // Q
+                case 69: pressed.e = 0; break; // E
+                case 82: pressed.r = 0; break; // R
+                case 84: pressed.t = 0; break; // T
+                case 80: pressed.p = 0; break; // P
+                case 79: pressed.o = 0; break; // O
+                case 77: pressed.m = 0; break; // M
+                case 73: pressed.i = 0; break; // I
+                case 89: pressed.y = 0; break; // Y
+                case 85: pressed.u = 0; break; // U
+                case 75: pressed.k = 0; break; // K
+                case 76: pressed.l = 0; break; // L
+                case 72: pressed.h = 0; break; // H
+                case 90: pressed.z = 0; break; // Z
+                case 88: pressed.x = 0; break; // X
+                case 83: pressed.s = 0; break; // S
+                case 67: pressed.c = 0; break; // C
+                case 74: pressed.g = 0; break; // G
+                case 71: pressed.j = 0; break; // J
+                case 66: pressed.b = 0; break; // B
+                case 86: pressed.v = 0; break; // V
+                case 78: pressed.n = 0; break; // N
+                case 27: pressed.esc = 0; break; // Esc
             }
         };
         chatBox.onblur = function() {
@@ -1393,8 +1334,7 @@
             mouseX = event.clientX;
             mouseY = event.clientY;
         };
-        setInterval(function() {
-            // send mouse update
+        setInterval(function() { // send mouse update
             sendMouseMove((mouseX - mainCanvas.width / 2) / cameraZ + cameraX, (mouseY - mainCanvas.height / 2) / cameraZ + cameraY);
         }, 50);
         wHandle.onresize = function() {
@@ -1403,7 +1343,7 @@
             viewMult = Math.sqrt(Math.min(cH / 1080, cW / 1920));
         };
         wHandle.onresize();
-        log.info(`init done in ${Date.now() - LOAD_START}ms`);
+        log.info(`init completed in ${Date.now() - LOAD_START}ms`);
         gameReset();
         showESCOverlay();
         if (settings.allowGETipSet && wHandle.location.search) {
@@ -1434,8 +1374,8 @@
         drawLeaderboard();
     };
     wHandle.setChatHide = function(a) {
-        settings.showChat = !a;
-        drawChat();
+        settings.hideChat = a;
+        settings.hideChat ? wjQuery('#chat_textbox').hide() : wjQuery('#chat_textbox').show();
     };
     wHandle.setMinimap = function(a) {
         settings.showMinimap = !a;
