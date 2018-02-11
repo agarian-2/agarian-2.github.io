@@ -329,6 +329,10 @@
                 border.top = reader.getFloat64();
                 border.right = reader.getFloat64();
                 border.bottom = reader.getFloat64();
+                minX = border.left;
+                minY = border.top;
+                maxX = border.right;
+                maxY = border.bottom;
                 border.width = border.right - border.left;
                 border.height = border.bottom - border.top;
                 border.centerX = (border.left + border.right) / 2;
@@ -482,7 +486,11 @@
         viewMult = 1,
         mouseX = NaN,
         mouseY = NaN,
-        mouseZ = 1;
+        mouseZ = 1,
+        minX = 0,
+        minY = 0,
+        maxX = 0,
+        maxY = 0;
     var settings = {
         mobile: "createTouch" in document,
         showMass: 1,
@@ -544,7 +552,7 @@
             });
         });
     }
-    //var response = null;
+    /*var response = null;
     // May remove this loop...
     wjQuery.ajax({
         type: "POST",
@@ -557,7 +565,7 @@
             for (var i = 0; i < response.length; i++) knownSkins[response[i]] = stamp;
             for (var i in knownSkins) if (knownSkins[i] !== stamp) delete knownSkins[i];
         }
-    });
+    });*/
     function hideESCOverlay() {
         escOverlayShown = 0;
         wjQuery("#overlays").hide();
@@ -571,8 +579,8 @@
         scaleForth(ctx);
         ctx.translate(-cameraX, -cameraY);
     }
-    function scaleForth(ctx) { ctx.scale(cameraZ, cameraZ); }
-    function scaleBack(ctx) { ctx.scale(cameraZInvd, cameraZInvd); }
+    function scaleForth(ctx) {ctx.scale(cameraZ, cameraZ)}
+    function scaleBack(ctx) {ctx.scale(cameraZInvd, cameraZInvd)}
     function fromCamera(ctx) {
         ctx.translate(cameraX, cameraY);
         scaleBack(ctx);
@@ -645,10 +653,10 @@
         var minutes = ~~(seconds / 60);
         if (minutes < 1) return "<1 min";
         var hours = ~~(minutes / 60);
-        if (hours < 1) return minutes + "min";
+        if (hours < 1) return minutes + " min";
         var days = ~~(hours / 24);
-        if (days < 1) return hours + "h";
-        return days + "d";
+        if (days < 1) return hours + " hours";
+        return days + " days";
     }
     function drawLeaderboard() {
         if (leaderboard.type === NaN) return leaderboard.visible = 0;
@@ -677,7 +685,7 @@
                 ctx.fill();
             }
         } else {
-            var text, isMe = 0, w, start;
+            var text, isMe = 0, w;
             ctx.font = "20px Ubuntu";
             for (var i = 0; i < len; i++) {
                 if (leaderboard.type === "text") text = leaderboard.items[i];
@@ -1276,7 +1284,7 @@
                     pressed.b = 1;
                     break;
                 case 86: // V
-                    if (isTyping || escOverlayShown || pressed.v) break;
+                    if (isTyping || escOverlayShown) break;
                     wsSend(UINT8_CACHE[42]);
                     pressed.v = 1;
                     break;
@@ -1401,12 +1409,12 @@
         sendPlay(a);
         hideESCOverlay();
     };
-    wHandle.openSkinsList = function() {
+    /*wHandle.openSkinsList = function() {
         if (wjQuery("#inPageModalTitle").text() === "Skins") return;
         wjQuery.get("include/gallery.php").then(function(data) {
             wjQuery("#inPageModalTitle").text("Skins");
             wjQuery("#inPageModalBody").html(data);
         });
-    };
+    };*/
     wHandle.onload = init;
 })(window, window.jQuery);
