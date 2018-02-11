@@ -544,7 +544,7 @@
             });
         });
     }
-    var response = null;
+    //var response = null;
     // May remove this loop...
     wjQuery.ajax({
         type: "POST",
