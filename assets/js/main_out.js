@@ -1,9 +1,11 @@
 (function(wHandle, wjQuery) { /*global navigator, Image, $*/
-    if (navigator.appVersion.indexOf("MSIE") != -1) alert("You're using a pretty old browser, some parts of the website might not work properly.");
+    if (navigator.appVersion.indexOf("MSIE") != -1) alert(
+        "You're using a pretty old browser, some parts of the website might not work properly."
+    );
     Date.now || (Date.now = function() {
         return (+new Date()).getTime();
     });
-    var LOAD_START = Date.now();
+    var DATE = Date.now();
     Array.prototype.peek = function() {
         return this[this.length - 1];
     };
@@ -13,26 +15,30 @@
         return i !== -1;
     };
     function bytesToColor(r, g, b) {
-        var r1 = ("00" + (~~r).toString(16)).slice(-2);
-        var g1 = ("00" + (~~g).toString(16)).slice(-2);
-        var b1 = ("00" + (~~b).toString(16)).slice(-2);
+        var r1 = ("00" + (~~r).toString(16)).slice(-2),
+            g1 = ("00" + (~~g).toString(16)).slice(-2),
+            b1 = ("00" + (~~b).toString(16)).slice(-2);
         return `#${r1}${g1}${b1}`;
     }
     function colorToBytes(color) {
-        if (color.length === 4)
-            return {r: parseInt(color[1] + color[1], 16), g: parseInt(color[2] + color[2], 16), b: parseInt(color[3] + color[3], 16)};
-        else if (color.length === 7)
-            return {r: parseInt(color[1] + color[2], 16), g: parseInt(color[3] + color[4], 16), b: parseInt(color[5] + color[6], 16) };
+        if (color.length === 4) return {
+            r: parseInt(color[1] + color[1], 16),
+            g: parseInt(color[2] + color[2], 16),
+            b: parseInt(color[3] + color[3], 16)
+        };
+        else if (color.length === 7) return {
+            r: parseInt(color[1] + color[2], 16),
+            g: parseInt(color[3] + color[4], 16),
+            b: parseInt(color[5] + color[6], 16)
+        };
         throw new Error(`invalid color ${color}`);
     }
     function darkenColor(color) {
-        var a = colorToBytes(color);
-        return bytesToColor(a.r * .9, a.g * .9, a.b * .9);
+        var c = colorToBytes(color);
+        return bytesToColor(c.r * .9, c.g * .9, c.b * .9);
     }
-    function cleanupObject(object) {
-        for (var i in object) delete object[i];
-    }
-    var __buf = new DataView(new ArrayBuffer(8));
+    function cleanupObject(object) {for (var i in object) delete object[i]}
+    var buffer = new DataView(new ArrayBuffer(8));
     function Writer(littleEndian) {
         this._e = littleEndian;
         this.reset();
@@ -53,37 +59,37 @@
             return this;
         },
         setUint16: function(a) {
-            __buf.setUint16(0, a, this._e);
+            buffer.setUint16(0, a, this._e);
             this._move(2);
             return this;
         },
         setInt16: function(a) {
-            __buf.setInt16(0, a, this._e);
+            buffer.setInt16(0, a, this._e);
             this._move(2);
             return this;
         },
         setUint32: function(a) {
-            __buf.setUint32(0, a, this._e);
+            buffer.setUint32(0, a, this._e);
             this._move(4);
             return this;
         },
         setInt32: function(a) {
-            __buf.setInt32(0, a, this._e);
+            buffer.setInt32(0, a, this._e);
             this._move(4);
             return this;
         },
         setFloat32: function(a) {
-            __buf.setFloat32(0, a, this._e);
+            buffer.setFloat32(0, a, this._e);
             this._move(4);
             return this;
         },
         setFloat64: function(a) {
-            __buf.setFloat64(0, a, this._e);
+            buffer.setFloat64(0, a, this._e);
             this._move(8);
             return this;
         },
         _move: function(b) {
-            for (var i = 0; i < b; i++) this._b.push(__buf.getUint8(i));
+            for (var i = 0; i < b; i++) this._b.push(buffer.getUint8(i));
         },
         setStringUTF8: function(s) {
             var bytesStr = unescape(encodeURIComponent(s));
@@ -143,7 +149,7 @@
         debug: function(a) {if (log.verbosity <= 3) return; console.debug(a)}
     };
     var wsUrl = null;
-    var SKIN_URL = "../../skins/"; // Doesn't work with file:/// urls
+    var SKIN_URL = "../../skins/";
     var USE_HTTPS = "https:" == wHandle.location.protocol;
     var PI_2 = Math.PI * 2;
     var SEND_254 = new Uint8Array([254, 6, 0, 0, 0]);
@@ -179,7 +185,7 @@
     };
     function wsCleanup() {
         if (!ws) return;
-        log.debug("ws cleanup trigger");
+        log.debug("WS cleanup triggered!");
         ws.onopen = null;
         ws.onmessage = null;
         ws.onerror = null;
@@ -188,10 +194,7 @@
         ws = null;
     }
     function wsInit(url) {
-        if (ws) {
-            log.debug("ws init on existing conn");
-            wsCleanup();
-        }
+        if (ws) log.debug("WS init on existing connection!"), wsCleanup();
         wjQuery("#connecting").show();
         ws = new WebSocket(`ws${USE_HTTPS ? "s" : ""}://${wsUrl = url}`);
         ws.binaryType = "arraybuffer";
@@ -205,13 +208,13 @@
         wjQuery("#connecting").hide();
         wsSend(SEND_254);
         wsSend(SEND_255);
-        log.debug(`ws connected, using https: ${USE_HTTPS}`);
+        log.debug(`WS connected, using https: ${USE_HTTPS}`);
     }
     function wsError(error) {
         log.warn(error);
     }
     function wsClose(e) {
-        log.debug(`ws disconnected ${e.code} '${e.reason}'`);
+        log.debug(`WS disconnected ${e.code} '${e.reason}'`);
         wsCleanup();
         gameReset();
         setTimeout(function() {
@@ -231,7 +234,7 @@
         var packetId = reader.getUint8();
         switch (packetId) {
             case 0x10: // update nodes
-                var killer, killed, id, node, x, y, s, flags, cell,
+                var killer, killed, id, x, y, s, flags, cell,
                     updColor, updName, updSkin, count, color, name, skin;
                 // consume records
                 count = reader.getUint16();
@@ -301,14 +304,14 @@
             case 0x30: // text list
                 leaderboard.items = [];
                 leaderboard.type = "text";
-                var count = reader.getUint32();
+                count = reader.getUint32();
                 for (i = 0; i < count; ++i) leaderboard.items.push(reader.getStringUTF8());
                 drawLeaderboard();
                 break;
             case 0x31: // ffa list
                 leaderboard.items = [];
                 leaderboard.type = "ffa";
-                var count = reader.getUint32();
+                count = reader.getUint32();
                 for (i = 0; i < count; ++i) {
                     leaderboard.items.push({
                         me: !!reader.getUint32(),
@@ -320,7 +323,7 @@
             case 0x32: // pie chart for teams
                 leaderboard.items = [];
                 leaderboard.type = "pie";
-                var count = reader.getUint32();
+                count = reader.getUint32();
                 for (i = 0; i < count; ++i) leaderboard.items.push(reader.getFloat32());
                 drawLeaderboard();
                 break;
@@ -329,10 +332,10 @@
                 border.top = reader.getFloat64();
                 border.right = reader.getFloat64();
                 border.bottom = reader.getFloat64();
-                minX = border.left;
-                minY = border.top;
-                maxX = border.right;
-                maxY = border.bottom;
+                //minX = border.left;
+                //minY = border.top;
+                //maxX = border.right;
+                //maxY = border.bottom;
                 border.width = border.right - border.left;
                 border.height = border.bottom - border.top;
                 border.centerX = (border.left + border.right) / 2;
@@ -352,15 +355,15 @@
                 }, 2000);
                 break;
             case 0x63: // chat message
-                var flags = reader.getUint8();
-                var color = bytesToColor(reader.getUint8(), reader.getUint8(), reader.getUint8());
-                var name = reader.getStringUTF8().trim();
+                flags = reader.getUint8();
+                color = bytesToColor(reader.getUint8(), reader.getUint8(), reader.getUint8());
+                name = reader.getStringUTF8().trim();
                 var reg = /\{([\w]+)\}/.exec(name);
                 if (reg) name = name.replace(reg[0], "").trim();
                 var message = reader.getStringUTF8();
-                var server = !!(flags & 0x80),
-                    admin = !!(flags & 0x40),
-                    mod = !!(flags & 0x20);
+                var server = !!(flags & 0x80);
+                var admin = !!(flags & 0x40);
+                var mod = !!(flags & 0x20);
                 if (server && name !== "SERVER") name = "[SERVER] " + name;
                 if (admin) name = "[ADMIN] " + name;
                 if (mod) name = "[MOD] " + name;
@@ -472,7 +475,7 @@
         mainCtx = null,
         knownSkins = {},
         loadedSkins = {},
-        escOverlayShown = 0,
+        overlayShown = 0,
         isTyping = 0,
         chatBox = null,
         mapCenterSet = 0,
@@ -486,11 +489,11 @@
         viewMult = 1,
         mouseX = NaN,
         mouseY = NaN,
-        mouseZ = 1,
-        minX = 0,
-        minY = 0,
-        maxX = 0,
-        maxY = 0;
+        mouseZ = 1;
+        //minX = 0,
+        //minY = 0,
+        //maxX = 0,
+        //maxY = 0;
     var settings = {
         mobile: "createTouch" in document,
         showMass: 1,
@@ -552,26 +555,12 @@
             });
         });
     }
-    /*var response = null;
-    // May remove this loop...
-    wjQuery.ajax({
-        type: "POST",
-        dataType: "json",
-        url: "checkdir.php",
-        data: {"action": "getSkins"},
-        success: function(data) {
-            var stamp = Date.now();
-            response = JSON.parse(data.names);
-            for (var i = 0; i < response.length; i++) knownSkins[response[i]] = stamp;
-            for (var i in knownSkins) if (knownSkins[i] !== stamp) delete knownSkins[i];
-        }
-    });*/
-    function hideESCOverlay() {
-        escOverlayShown = 0;
-        wjQuery("#overlays").hide();
+    function hideOverlay() {
+        overlayShown = 0;
+        wjQuery("#overlays").fadeOut(200);
     }
-    function showESCOverlay() {
-        escOverlayShown = 1;
+    function showOverlay() {
+        overlayShown = 1;
         wjQuery("#overlays").fadeIn(300);
     }
     function toCamera(ctx) {
@@ -616,7 +605,7 @@
         canvas.height = height;
         for (var i = 0; i < len; i++) {
             width = 0;
-            var complexes = lines[i];
+            complexes = lines[i];
             for (var j = 0; j < complexes.length; j++) {
                 ctx.font = "18px Ubuntu";
                 ctx.fillStyle = complexes[j].color;
@@ -696,7 +685,7 @@
                 var string = String($("#lbColor").val());
                 ctx.fillStyle = isMe ? "#" + string : "#FFF";
                 if (leaderboard.type === "ffa") text = (i + 1) + ". " + (text || "An unnamed cell");
-                var start = ((w = ctx.measureText(text).width) > 200) ? 2 : 100 - w * 0.5;
+                var start = ((w = ctx.measureText(text).width) > 200) ? 2 : 100 - w * .5;
                 ctx.fillText(text, start, 70 + 24 * i);
             }
         }
@@ -705,7 +694,7 @@
         mainCtx.save();
         mainCtx.lineWidth = 1;
         mainCtx.strokeStyle = settings.darkTheme ? "#AAA" : "#000";
-        mainCtx.globalAlpha = 0.2;
+        mainCtx.globalAlpha = .2;
         var step = 50, i,
             cW = mainCanvas.width / cameraZ,
             cH = mainCanvas.height / cameraZ,
@@ -923,7 +912,7 @@
         born: null, updated: null, dead: null, // timestamps
         destroy: function(killerId) {
             delete cells.byId[this.id];
-            if (cells.mine.remove(this.id) && cells.mine.length === 0) showESCOverlay();
+            if (cells.mine.remove(this.id) && cells.mine.length === 0) showOverlay();
             this.destroyed = 1;
             this.dead = syncUpdStamp;
             if (killerId && !this.diedBy) this.diedBy = killerId;
@@ -939,8 +928,8 @@
             this.x = this.ox + (this.nx - this.ox) * dt;
             this.y = this.oy + (this.ny - this.oy) * dt;
             this.s = this.os + (this.ns - this.os) * dt;
-            this.nameSize = ~~(~~(Math.max(~~(0.3 * this.ns), 24)) / 3) * 3;
-            this.drawNameSize = ~~(~~(Math.max(~~(0.3 * this.s), 24)) / 3) * 3;
+            this.nameSize = ~~(~~(Math.max(~~(.3 * this.ns), 24)) / 3) * 3;
+            this.drawNameSize = ~~(~~(Math.max(~~(.3 * this.s), 24)) / 3) * 3;
         },
         setName: function(value) {
             var nameSkin = /\{([\w\W]+)\}/.exec(value);
@@ -977,10 +966,10 @@
             ctx.beginPath();
             if (this.jagged) {
                 var pointCount = 120;
-                var incremental = PI_2 / pointCount;
+                var increment = PI_2 / pointCount;
                 ctx.moveTo(this.x, this.y + this.s + 3);
                 for (var i = 1; i < pointCount; i++) {
-                    var angle = i * incremental;
+                    var angle = i * increment;
                     var dist = this.s - 3 + (i % 2 === 0) * 6;
                     ctx.lineTo(
                         this.x + dist * Math.sin(angle),
@@ -1138,10 +1127,10 @@
                 x += item.width - 2 * cache.lineWidth;
             }
         } else {
-            var cache = getNameCache(value, size);
+            cache = getNameCache(value, size);
             cache.accessTime = syncAppStamp;
             var canvas = cache.canvas;
-            var correctionScale = drawSize / cache.size;
+            correctionScale = drawSize / cache.size;
             ctx.scale(correctionScale, correctionScale);
             x /= correctionScale;
             y /= correctionScale;
@@ -1164,7 +1153,7 @@
         wHandle.onkeydown = function(event) {
             switch (event.keyCode) {
                 case 13: // Enter
-                    if (escOverlayShown) break;
+                    if (overlayShown) break;
                     if (settings.hideChat) break;
                     if (isTyping) {
                         chatBox.blur();
@@ -1174,130 +1163,129 @@
                     } else chatBox.focus();
                     break;
                 case 32: // Space
-                    if (isTyping || escOverlayShown || pressed.space) break;
+                    if (isTyping || overlayShown || pressed.space) break;
                     wsSend(UINT8_CACHE[17]);
                     pressed.space = 1;
                     break;
                 case 87: // W
-                    if (isTyping || escOverlayShown) break;
+                    if (isTyping || overlayShown) break;
                     wsSend(UINT8_CACHE[21]);
                     pressed.w = 1;
                     break;
                 case 81: // Q
-                    if (isTyping || escOverlayShown || pressed.q) break;
+                    if (isTyping || overlayShown || pressed.q) break;
                     wsSend(UINT8_CACHE[18]);
                     pressed.q = 1;
                     break;
                 case 69: // E
-                    if (isTyping || escOverlayShown || pressed.e) break;
+                    if (isTyping || overlayShown || pressed.e) break;
                     wsSend(UINT8_CACHE[22]);
                     pressed.e = 1;
                     break;
                 case 82: // R
-                    if (isTyping || escOverlayShown) break;
+                    if (isTyping || overlayShown) break;
                     wsSend(UINT8_CACHE[23]);
                     pressed.r = 1;
                     break;
                 case 84: // T
-                    if (isTyping || escOverlayShown || pressed.t) break;
+                    if (isTyping || overlayShown || pressed.t) break;
                     wsSend(UINT8_CACHE[24]);
                     pressed.t = 1;
                     break;
                 case 80: // P
-                    if (isTyping || escOverlayShown || pressed.p) break;
+                    if (isTyping || overlayShown || pressed.p) break;
                     wsSend(UINT8_CACHE[25]);
                     pressed.p = 1;
                     break;
                 case 79: // O
-                    if (isTyping || escOverlayShown || pressed.o) break;
+                    if (isTyping || overlayShown || pressed.o) break;
                     wsSend(UINT8_CACHE[26]);
                     pressed.o = 1;
                     break;
                 case 77: // M
-                    if (isTyping || escOverlayShown || pressed.m) break;
+                    if (isTyping || overlayShown || pressed.m) break;
                     wsSend(UINT8_CACHE[27]);
                     pressed.m = 1;
                     break;
                 case 73: // I
-                    if (isTyping || escOverlayShown || pressed.i) break;
+                    if (isTyping || overlayShown || pressed.i) break;
                     wsSend(UINT8_CACHE[28]);
                     pressed.i = 1;
                     break;
                 case 89: // Y
-                    if (isTyping || escOverlayShown) break;
+                    if (isTyping || overlayShown) break;
                     wsSend(UINT8_CACHE[30]);
                     pressed.y = 1;
                     break;
                 case 85: // U
-                    if (isTyping || escOverlayShown) break;
+                    if (isTyping || overlayShown) break;
                     wsSend(UINT8_CACHE[31]);
                     pressed.u = 1;
                     break;
                 case 75: // K
-                    if (isTyping || escOverlayShown || pressed.k) break;
+                    if (isTyping || overlayShown || pressed.k) break;
                     wsSend(UINT8_CACHE[29]);
                     pressed.k = 1;
                     break;
                 case 76: // L
-                    if (isTyping || escOverlayShown || pressed.l) break;
+                    if (isTyping || overlayShown || pressed.l) break;
                     wsSend(UINT8_CACHE[33]);
                     pressed.l = 1;
                     break;
                 case 72: // H
-                    if (isTyping || escOverlayShown || pressed.h) break;
+                    if (isTyping || overlayShown || pressed.h) break;
                     wsSend(UINT8_CACHE[34]);
                     pressed.h = 1;
                     break;
                 case 90: // Z
-                    if (isTyping || escOverlayShown) break;
+                    if (isTyping || overlayShown) break;
                     wsSend(UINT8_CACHE[35]);
                     pressed.z = 1;
                     break;
                 case 88: // X
-                    if (isTyping || escOverlayShown || pressed.x) break;
+                    if (isTyping || overlayShown || pressed.x) break;
                     wsSend(UINT8_CACHE[36]);
                     pressed.x = 1;
                     break;
                 case 83: // S
-                    if (isTyping || escOverlayShown) break;
+                    if (isTyping || overlayShown) break;
                     wsSend(UINT8_CACHE[37]);
                     pressed.s = 1;
                     break;
                 case 67: // C
-                    if (isTyping || escOverlayShown || pressed.c) break;
+                    if (isTyping || overlayShown || pressed.c) break;
                     wsSend(UINT8_CACHE[38]);
                     pressed.c = 1;
                     break;
                 case 71: // J
-                    if (isTyping || escOverlayShown || pressed.j) break;
+                    if (isTyping || overlayShown || pressed.j) break;
                     wsSend(UINT8_CACHE[39]);
                     pressed.j = 1;
                     break;
                 case 74: // G
-                    if (isTyping || escOverlayShown) break;
+                    if (isTyping || overlayShown) break;
                     wsSend(UINT8_CACHE[40]);
                     pressed.g = 1;
                     break;
                 case 66: // B
-                    if (isTyping || escOverlayShown || pressed.b) break;
+                    if (isTyping || overlayShown || pressed.b) break;
                     wsSend(UINT8_CACHE[41]);
                     pressed.b = 1;
                     break;
                 case 86: // V
-                    if (isTyping || escOverlayShown) break;
+                    if (isTyping || overlayShown) break;
                     wsSend(UINT8_CACHE[42]);
                     pressed.v = 1;
                     break;
                 case 78: // N
-                    if (isTyping || escOverlayShown) break;
+                    if (isTyping || overlayShown) break;
                     wsSend(UINT8_CACHE[43]);
                     pressed.n = 1;
                     break;
                 case 27: // Esc
                     if (pressed.esc) break;
+                    overlayShown ? hideOverlay() : showOverlay();
                     pressed.esc = 1;
-                    if (escOverlayShown) hideESCOverlay();
-                    else showESCOverlay();
                     break;
             }
         };
@@ -1344,16 +1332,16 @@
         };
         setInterval(function() { // send mouse update
             sendMouseMove((mouseX - mainCanvas.width / 2) / cameraZ + cameraX, (mouseY - mainCanvas.height / 2) / cameraZ + cameraY);
-        }, 50);
+        }, 60);
         wHandle.onresize = function() {
             var cW = mainCanvas.width = wHandle.innerWidth,
                 cH = mainCanvas.height = wHandle.innerHeight;
             viewMult = Math.sqrt(Math.min(cH / 1080, cW / 1920));
         };
         wHandle.onresize();
-        log.info(`init completed in ${Date.now() - LOAD_START}ms`);
+        log.info(`init completed in ${Date.now() - DATE}ms`);
         gameReset();
-        showESCOverlay();
+        showOverlay();
         if (settings.allowGETipSet && wHandle.location.search) {
             var div = /ip=([\w\W]+):([0-9]+)/.exec(wHandle.location.search.slice(1));
             if (div) wsInit(`${div[1]}:${div[2]}`);
@@ -1403,18 +1391,11 @@
     wHandle.spectate = function(a) {
         wsSend(UINT8_CACHE[1]);
         stats.maxScore = 0;
-        hideESCOverlay();
+        hideOverlay();
     };
     wHandle.play = function(a) {
         sendPlay(a);
-        hideESCOverlay();
+        hideOverlay();
     };
-    /*wHandle.openSkinsList = function() {
-        if (wjQuery("#inPageModalTitle").text() === "Skins") return;
-        wjQuery.get("include/gallery.php").then(function(data) {
-            wjQuery("#inPageModalTitle").text("Skins");
-            wjQuery("#inPageModalBody").html(data);
-        });
-    };*/
     wHandle.onload = init;
 })(window, window.jQuery);
