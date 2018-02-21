@@ -1331,8 +1331,11 @@
             mouseY = event.clientY;
         };
         setInterval(function() { // send mouse update
-            sendMouseMove((mouseX - mainCanvas.width / 2) / cameraZ + cameraX, (mouseY - mainCanvas.height / 2) / cameraZ + cameraY);
-        }, 60);
+            sendMouseMove((
+                mouseX - mainCanvas.width / 2) / cameraZ + cameraX,
+                (mouseY - mainCanvas.height / 2) / cameraZ + cameraY
+            );
+        }, 40);
         wHandle.onresize = function() {
             var cW = mainCanvas.width = wHandle.innerWidth,
                 cH = mainCanvas.height = wHandle.innerHeight;
