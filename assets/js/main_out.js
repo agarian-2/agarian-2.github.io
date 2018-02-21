@@ -1331,8 +1331,8 @@
             mouseY = event.clientY;
         };
         setInterval(function() { // send mouse update
-            sendMouseMove((
-                mouseX - mainCanvas.width / 2) / cameraZ + cameraX,
+            sendMouseMove(
+                (mouseX - mainCanvas.width / 2) / cameraZ + cameraX,
                 (mouseY - mainCanvas.height / 2) / cameraZ + cameraY
             );
         }, 40);
