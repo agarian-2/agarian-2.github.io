@@ -31,7 +31,7 @@
             g: parseInt(color[3] + color[4], 16),
             b: parseInt(color[5] + color[6], 16)
         };
-        throw new Error(`invalid color ${color}`);
+        throw new Error(`Invalid color ${color}!`);
     }
     function darkenColor(color) {
         var c = colorToBytes(color);
@@ -965,16 +965,13 @@
             if (settings.showCellBorder && !this.ejected && 20 < this.s) this.s -= ctx.lineWidth / 2 - 2;
             ctx.beginPath();
             if (this.jagged) {
-                var pointCount = 120;
-                var increment = PI_2 / pointCount;
+                var points = this.s;
+                var increment = PI_2 / points;
                 ctx.moveTo(this.x, this.y + this.s + 3);
-                for (var i = 1; i < pointCount; i++) {
+                for (var i = 1; i < points; i++) {
                     var angle = i * increment;
                     var dist = this.s - 3 + (i % 2 === 0) * 6;
-                    ctx.lineTo(
-                        this.x + dist * Math.sin(angle),
-                        this.y + dist * Math.cos(angle)
-                    );
+                    ctx.lineTo(this.x + dist * Math.sin(angle), this.y + dist * Math.cos(angle));
                 }
                 ctx.lineTo(this.x, this.y + this.s + 3);
             } else ctx.arc(this.x, this.y, this.s, 0, PI_2, 0);
@@ -1331,11 +1328,8 @@
             mouseY = event.clientY;
         };
         setInterval(function() { // send mouse update
-            sendMouseMove(
-                (mouseX - mainCanvas.width / 2) / cameraZ + cameraX,
-                (mouseY - mainCanvas.height / 2) / cameraZ + cameraY
-            );
-        }, 40);
+            sendMouseMove((mouseX - mainCanvas.width / 2) / cameraZ + cameraX, (mouseY - mainCanvas.height / 2) / cameraZ + cameraY);
+        }, 60);
         wHandle.onresize = function() {
             var cW = mainCanvas.width = wHandle.innerWidth,
                 cH = mainCanvas.height = wHandle.innerHeight;
