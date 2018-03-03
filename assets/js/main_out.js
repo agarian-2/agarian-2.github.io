@@ -1,6 +1,6 @@
 (function(wHandle, wjQuery) { /*global navigator, Image, $*/
     if (navigator.appVersion.indexOf("MSIE") != -1) alert(
-        "You're using a pretty old browser, some parts of the website might not work properly."
+        "You're using a pretty old browser, some parts of the site may not work properly!"
     );
     Date.now || (Date.now = function() {
         return (+new Date()).getTime();
@@ -38,7 +38,7 @@
         return bytesToColor(c.r * .9, c.g * .9, c.b * .9);
     }
     function cleanupObject(object) {for (var i in object) delete object[i]}
-    var buffer = new DataView(new ArrayBuffer(8));
+    var _buffer = new DataView(new ArrayBuffer(8));
     function Writer(littleEndian) {
         this._e = littleEndian;
         this.reset();
@@ -59,37 +59,37 @@
             return this;
         },
         setUint16: function(a) {
-            buffer.setUint16(0, a, this._e);
+            _buffer.setUint16(0, a, this._e);
             this._move(2);
             return this;
         },
         setInt16: function(a) {
-            buffer.setInt16(0, a, this._e);
+            _buffer.setInt16(0, a, this._e);
             this._move(2);
             return this;
         },
         setUint32: function(a) {
-            buffer.setUint32(0, a, this._e);
+            _buffer.setUint32(0, a, this._e);
             this._move(4);
             return this;
         },
         setInt32: function(a) {
-            buffer.setInt32(0, a, this._e);
+            _buffer.setInt32(0, a, this._e);
             this._move(4);
             return this;
         },
         setFloat32: function(a) {
-            buffer.setFloat32(0, a, this._e);
+            _buffer.setFloat32(0, a, this._e);
             this._move(4);
             return this;
         },
         setFloat64: function(a) {
-            buffer.setFloat64(0, a, this._e);
+            _buffer.setFloat64(0, a, this._e);
             this._move(8);
             return this;
         },
         _move: function(b) {
-            for (var i = 0; i < b; i++) this._b.push(buffer.getUint8(i));
+            for (var i = 0; i < b; i++) this._b.push(_buffer.getUint8(i));
         },
         setStringUTF8: function(s) {
             var bytesStr = unescape(encodeURIComponent(s));
@@ -148,13 +148,12 @@
         info: function(a) {if (log.verbosity <= 2) return; console.info(a)},
         debug: function(a) {if (log.verbosity <= 3) return; console.debug(a)}
     };
-    var wsUrl = null;
+    var WS_URL = null;
     var SKIN_URL = "../../skins/";
     var USE_HTTPS = "https:" == wHandle.location.protocol;
-    var PI_2 = Math.PI * 2;
-    var SEND_254 = new Uint8Array([254, 6, 0, 0, 0]);
-    var SEND_255 = new Uint8Array([255, 1, 0, 0, 0]);
-    var UINT8_CACHE = {
+    var UINT8_254 = new Uint8Array([254, 6, 0, 0, 0]);
+    var UINT8_255 = new Uint8Array([255, 1, 0, 0, 0]);
+    var UINT8 = {
         1: new Uint8Array([1]),
         17: new Uint8Array([17]),
         21: new Uint8Array([21]),
@@ -196,7 +195,7 @@
     function wsInit(url) {
         if (ws) log.debug("WS init on existing connection!"), wsCleanup();
         wjQuery("#connecting").show();
-        ws = new WebSocket(`ws${USE_HTTPS ? "s" : ""}://${wsUrl = url}`);
+        ws = new WebSocket(`ws${USE_HTTPS ? "s" : ""}://${WS_URL = url}`);
         ws.binaryType = "arraybuffer";
         ws.onopen = wsOpen;
         ws.onmessage = wsMessage;
@@ -206,8 +205,8 @@
     function wsOpen() {
         disconnectDelay = 1000;
         wjQuery("#connecting").hide();
-        wsSend(SEND_254);
-        wsSend(SEND_255);
+        wsSend(UINT8_254);
+        wsSend(UINT8_255);
         log.debug(`WS connected, using https: ${USE_HTTPS}`);
     }
     function wsError(error) {
@@ -219,7 +218,7 @@
         gameReset();
         setTimeout(function() {
             if (ws && ws.readyState === 1) return;
-            wsInit(wsUrl);
+            wsInit(WS_URL);
         }, disconnectDelay *= 1.5);
     }
     function wsSend(data) {
@@ -350,7 +349,7 @@
                 reader.getUint32(); // game type
                 if (!/MultiOgar/.test(reader.getStringUTF8()) || stats.pingLoopId) break;
                 stats.pingLoopId = setInterval(function() {
-                    wsSend(UINT8_CACHE[254]);
+                    wsSend(UINT8[254]);
                     stats.pingLoopStamp = Date.now();
                 }, 2000);
                 break;
@@ -399,7 +398,7 @@
         wsSend(writer);
     }
     function sendPlay(name) {
-        log.debug("play trigger");
+        log.debug("Play triggered");
         var writer = new Writer(1);
         writer.setUint8(0x00);
         writer.setStringUTF8(name);
@@ -467,7 +466,7 @@
         maxScore: 0
     });
     var ws = null,
-        wsUrl = null,
+        WS_URL = null,
         disconnectDelay = 1000,
         syncUpdStamp = Date.now(),
         syncAppStamp = Date.now(),
@@ -506,9 +505,9 @@
         showMinimap: 1,
         darkTheme: 1,
         hideGrid: 0,
-        showCellBorder: 1,
+        cellBorders: 1,
         infiniteZoom: 0,
-        transparentCells: 0,
+        transparency: 0,
         allowGETipSet: 0
     };
     var pressed = {
@@ -654,22 +653,22 @@
         var canvas = leaderboard.canvas;
         var ctx = canvas.getContext("2d");
         var len = leaderboard.items.length;
-        canvas.width = 200;
+        canvas.width = 250;
         canvas.height = leaderboard.type !== "pie" ? 60 + 24 * len : 240;
         ctx.globalAlpha = .4;
         ctx.fillStyle = "#000";
-        ctx.fillRect(0, 0, 200, canvas.height);
+        ctx.fillRect(0, 0, 250, canvas.height);
         ctx.globalAlpha = 1;
         ctx.fillStyle = "#FFF";
         ctx.font = "30px Ubuntu";
-        ctx.fillText("Leaderboard", 100 - ctx.measureText("Leaderboard").width / 2, 40);
+        ctx.fillText("Leaderboard", 125 - ctx.measureText("Leaderboard").width / 2, 40);
         if (leaderboard.type === "pie") {
             var last = 0;
             for (var i = 0; i < len; i++) {
                 ctx.fillStyle = leaderboard.teams[i];
                 ctx.beginPath();
                 ctx.moveTo(100, 140);
-                ctx.arc(100, 140, 80, last, (last += leaderboard.items[i] * PI_2), 0);
+                ctx.arc(100, 140, 80, last, (last += leaderboard.items[i] * Math.PI * 2), 0);
                 ctx.closePath();
                 ctx.fill();
             }
@@ -685,8 +684,8 @@
                 var string = String($("#lbColor").val());
                 ctx.fillStyle = isMe ? "#" + string : "#FFF";
                 if (leaderboard.type === "ffa") text = (i + 1) + ". " + (text || "An unnamed cell");
-                var start = ((w = ctx.measureText(text).width) > 200) ? 2 : 100 - w * .5;
-                ctx.fillText(text, start, 70 + 24 * i);
+                ctx.textAlign = "left";
+                ctx.fillText(text, 15, 70 + 24 * i);
             }
         }
     }
@@ -791,7 +790,7 @@
         var myPosY = beginY + ((cameraY + border.height / 2) / border.height * height);
         mainCtx.fillStyle = "#FAA";
         mainCtx.beginPath();
-        mainCtx.arc(myPosX, myPosY, 5, 0, PI_2, 0);
+        mainCtx.arc(myPosX, myPosY, 5, 0, Math.PI * 2, 0);
         mainCtx.closePath();
         mainCtx.fill();
         // draw name above user's pos if they have a cell on the screen
@@ -898,6 +897,7 @@
         this.setSkin(skin);
         this.jagged = flags & 0x01 || flags & 0x10;
         this.ejected = !!(flags & 0x20);
+        this.food = !!(flags & 0x80); // For my server
         this.born = syncUpdStamp;
     }
     Cell.prototype = {
@@ -961,12 +961,13 @@
             ctx.strokeStyle = (color == '000000' || color == '000' || !color) ?
                 (settings.showColor ? this.sColor : Cell.prototype.sColor) : "#" + color;
             var size = String($("#cellBorderSize").val());
-            ctx.lineWidth = (!size || size == 5 || size > 50) ? Math.max(~~(this.s / 50), 10) : size;
-            if (settings.showCellBorder && !this.ejected && 20 < this.s) this.s -= ctx.lineWidth / 2 - 2;
+            ctx.lineWidth = (!size || size > 50) ? Math.max(~~(this.s / 50), 10) : size;
+            var showCellBorder = settings.cellBorders && !this.food && !this.ejected && 20 < this.s;
+            if (showCellBorder) this.s -= ctx.lineWidth / 2 - 2;
             ctx.beginPath();
             if (this.jagged) {
                 var points = this.s;
-                var increment = PI_2 / points;
+                var increment = Math.PI * 2 / points;
                 ctx.moveTo(this.x, this.y + this.s + 3);
                 for (var i = 1; i < points; i++) {
                     var angle = i * increment;
@@ -974,12 +975,12 @@
                     ctx.lineTo(this.x + dist * Math.sin(angle), this.y + dist * Math.cos(angle));
                 }
                 ctx.lineTo(this.x, this.y + this.s + 3);
-            } else ctx.arc(this.x, this.y, this.s, 0, PI_2, 0);
+            } else ctx.arc(this.x, this.y, this.s, 0, Math.PI * 2, 0);
             ctx.closePath();
             if (this.destroyed) ctx.globalAlpha = Math.max(200 - Date.now() + this.dead, 0) / 100;
-            else if (settings.transparentCells) ctx.globalAlpha = .5;
+            else if (settings.transparency) ctx.globalAlpha = .5;
             else ctx.globalAlpha = Math.min(Date.now() - this.born, 200) / 100;
-            if (settings.showCellBorder && !this.ejected && 20 < this.s) ctx.stroke();
+            if (showCellBorder) ctx.stroke();
             ctx.fill();
             if (settings.showSkins && this.skin) {
                 var skin = loadedSkins[this.skin];
@@ -993,7 +994,7 @@
                     ctx.restore();
                 }
             }
-            if (settings.showCellBorder && !this.ejected && 20 < this.s) this.s += ctx.lineWidth / 2 - 2;
+            if (showCellBorder) this.s += ctx.lineWidth / 2 - 2;
         },
         drawText: function(ctx) {
             if (this.s < 20 || this.jagged) return;
@@ -1010,13 +1011,11 @@
     function cacheCleanup() {
         for (var i in cachedNames) {
             for (var j in cachedNames[i])
-                if (syncAppStamp - cachedNames[i][j].accessTime >= 5000)
-                    delete cachedNames[i][j];
+                if (syncAppStamp - cachedNames[i][j].accessTime >= 5000) delete cachedNames[i][j];
             if (cachedNames[i] === {}) delete cachedNames[i];
         }
         for (var i in cachedMass)
-            if (syncAppStamp - cachedMass[i].accessTime >= 5000)
-                delete cachedMass[i];
+            if (syncAppStamp - cachedMass[i].accessTime >= 5000) delete cachedMass[i];
     }
     // 2-var draw-stay cache
     var cachedNames = {};
@@ -1091,15 +1090,13 @@
         if (!cachedNames[value]) return newNameCache(value, size);
         var sizes = Object.keys(cachedNames[value]);
         for (var i = 0, l = sizes.length; i < l; i++)
-            if (toleranceTest(size, sizes[i], size / 4))
-                return cachedNames[value][sizes[i]];
+            if (toleranceTest(size, sizes[i], size / 4)) return cachedNames[value][sizes[i]];
         return newNameCache(value, size);
     }
     function getMassCache(size) {
         var sizes = Object.keys(cachedMass);
         for (var i = 0, l = sizes.length; i < l; i++)
-            if (toleranceTest(size, sizes[i], size / 4))
-                return cachedMass[sizes[i]];
+            if (toleranceTest(size, sizes[i], size / 4)) return cachedMass[sizes[i]];
         return newMassCache(size);
     }
     function drawText(ctx, isMass, x, y, size, drawSize, value) {
@@ -1161,122 +1158,122 @@
                     break;
                 case 32: // Space
                     if (isTyping || overlayShown || pressed.space) break;
-                    wsSend(UINT8_CACHE[17]);
+                    wsSend(UINT8[17]);
                     pressed.space = 1;
                     break;
                 case 87: // W
                     if (isTyping || overlayShown) break;
-                    wsSend(UINT8_CACHE[21]);
+                    wsSend(UINT8[21]);
                     pressed.w = 1;
                     break;
                 case 81: // Q
                     if (isTyping || overlayShown || pressed.q) break;
-                    wsSend(UINT8_CACHE[18]);
+                    wsSend(UINT8[18]);
                     pressed.q = 1;
                     break;
                 case 69: // E
                     if (isTyping || overlayShown || pressed.e) break;
-                    wsSend(UINT8_CACHE[22]);
+                    wsSend(UINT8[22]);
                     pressed.e = 1;
                     break;
                 case 82: // R
                     if (isTyping || overlayShown) break;
-                    wsSend(UINT8_CACHE[23]);
+                    wsSend(UINT8[23]);
                     pressed.r = 1;
                     break;
                 case 84: // T
                     if (isTyping || overlayShown || pressed.t) break;
-                    wsSend(UINT8_CACHE[24]);
+                    wsSend(UINT8[24]);
                     pressed.t = 1;
                     break;
                 case 80: // P
                     if (isTyping || overlayShown || pressed.p) break;
-                    wsSend(UINT8_CACHE[25]);
+                    wsSend(UINT8[25]);
                     pressed.p = 1;
                     break;
                 case 79: // O
                     if (isTyping || overlayShown || pressed.o) break;
-                    wsSend(UINT8_CACHE[26]);
+                    wsSend(UINT8[26]);
                     pressed.o = 1;
                     break;
                 case 77: // M
                     if (isTyping || overlayShown || pressed.m) break;
-                    wsSend(UINT8_CACHE[27]);
+                    wsSend(UINT8[27]);
                     pressed.m = 1;
                     break;
                 case 73: // I
                     if (isTyping || overlayShown || pressed.i) break;
-                    wsSend(UINT8_CACHE[28]);
+                    wsSend(UINT8[28]);
                     pressed.i = 1;
                     break;
                 case 89: // Y
                     if (isTyping || overlayShown) break;
-                    wsSend(UINT8_CACHE[30]);
+                    wsSend(UINT8[30]);
                     pressed.y = 1;
                     break;
                 case 85: // U
                     if (isTyping || overlayShown) break;
-                    wsSend(UINT8_CACHE[31]);
+                    wsSend(UINT8[31]);
                     pressed.u = 1;
                     break;
                 case 75: // K
                     if (isTyping || overlayShown || pressed.k) break;
-                    wsSend(UINT8_CACHE[29]);
+                    wsSend(UINT8[29]);
                     pressed.k = 1;
                     break;
                 case 76: // L
                     if (isTyping || overlayShown || pressed.l) break;
-                    wsSend(UINT8_CACHE[33]);
+                    wsSend(UINT8[33]);
                     pressed.l = 1;
                     break;
                 case 72: // H
                     if (isTyping || overlayShown || pressed.h) break;
-                    wsSend(UINT8_CACHE[34]);
+                    wsSend(UINT8[34]);
                     pressed.h = 1;
                     break;
                 case 90: // Z
                     if (isTyping || overlayShown) break;
-                    wsSend(UINT8_CACHE[35]);
+                    wsSend(UINT8[35]);
                     pressed.z = 1;
                     break;
                 case 88: // X
                     if (isTyping || overlayShown || pressed.x) break;
-                    wsSend(UINT8_CACHE[36]);
+                    wsSend(UINT8[36]);
                     pressed.x = 1;
                     break;
                 case 83: // S
                     if (isTyping || overlayShown) break;
-                    wsSend(UINT8_CACHE[37]);
+                    wsSend(UINT8[37]);
                     pressed.s = 1;
                     break;
                 case 67: // C
                     if (isTyping || overlayShown || pressed.c) break;
-                    wsSend(UINT8_CACHE[38]);
+                    wsSend(UINT8[38]);
                     pressed.c = 1;
                     break;
                 case 71: // J
                     if (isTyping || overlayShown || pressed.j) break;
-                    wsSend(UINT8_CACHE[39]);
+                    wsSend(UINT8[39]);
                     pressed.j = 1;
                     break;
                 case 74: // G
                     if (isTyping || overlayShown) break;
-                    wsSend(UINT8_CACHE[40]);
+                    wsSend(UINT8[40]);
                     pressed.g = 1;
                     break;
                 case 66: // B
                     if (isTyping || overlayShown || pressed.b) break;
-                    wsSend(UINT8_CACHE[41]);
+                    wsSend(UINT8[41]);
                     pressed.b = 1;
                     break;
                 case 86: // V
                     if (isTyping || overlayShown) break;
-                    wsSend(UINT8_CACHE[42]);
+                    wsSend(UINT8[42]);
                     pressed.v = 1;
                     break;
                 case 78: // N
                     if (isTyping || overlayShown) break;
-                    wsSend(UINT8_CACHE[43]);
+                    wsSend(UINT8[43]);
                     pressed.n = 1;
                     break;
                 case 27: // Esc
@@ -1290,7 +1287,7 @@
             switch (event.keyCode) {
                 case 32: pressed.space = 0; break; // Space
                 case 87: pressed.w = 0; break; // W
-                case 81: if (pressed.q) wsSend(UINT8_CACHE[19]); pressed.q = 0; break; // Q
+                case 81: if (pressed.q) wsSend(UINT8[19]); pressed.q = 0; break; // Q
                 case 69: pressed.e = 0; break; // E
                 case 82: pressed.r = 0; break; // R
                 case 84: pressed.t = 0; break; // T
@@ -1346,7 +1343,7 @@
         window.requestAnimationFrame(drawGame);
     }
     wHandle.setserver = function(arg) {
-        if (wsUrl === arg) return;
+        if (WS_URL === arg) return;
         wsInit(arg);
     };
     wHandle.setDarkTheme = function(a) {
@@ -1377,16 +1374,16 @@
         settings.hideGrid = a;
     };
     wHandle.setCellBorder = function(a) {
-        settings.showCellBorder = a;
+        settings.cellBorders = a;
     };
     wHandle.setZoom = function(a) {
         settings.infiniteZoom = a;
     };
     wHandle.setTransparency = function(a) {
-        settings.transparentCells = a;
+        settings.transparency = a;
     };
     wHandle.spectate = function(a) {
-        wsSend(UINT8_CACHE[1]);
+        wsSend(UINT8[1]);
         stats.maxScore = 0;
         hideOverlay();
     };
