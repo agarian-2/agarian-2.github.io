@@ -682,7 +682,7 @@
                 var reg = /\{([\w]+)\}/.exec(text);
                 if (reg) text = text.replace(reg[0], "").trim();
                 var string = String($("#lbColor").val());
-                ctx.fillStyle = isMe ? "#" + string : "#FFF";
+                ctx.fillStyle = isMe ? "#" + (!string ? "FAA" : string) : "#FFF";
                 if (leaderboard.type === "ffa") text = (i + 1) + ". " + (text || "An unnamed cell");
                 ctx.textAlign = "left";
                 ctx.fillText(text, 15, 70 + 24 * i);
@@ -958,10 +958,10 @@
         drawShape: function(ctx) {
             ctx.fillStyle = settings.showColor ? this.color : Cell.prototype.color;
             var color = String($("#cellBorderColor").val());
-            ctx.strokeStyle = (color == '000000' || color == '000' || !color) ?
+            ctx.strokeStyle = (color === '000000' || color === '000' || !color) ?
                 (settings.showColor ? this.sColor : Cell.prototype.sColor) : "#" + color;
             var size = String($("#cellBorderSize").val());
-            ctx.lineWidth = (!size || size > 50) ? Math.max(~~(this.s / 50), 10) : size;
+            ctx.lineWidth = (!size || size > 50 || size === 1) ? Math.max(~~(this.s / 50), 10) : size;
             var showCellBorder = settings.cellBorders && !this.food && !this.ejected && 20 < this.s;
             if (showCellBorder) this.s -= ctx.lineWidth / 2 - 2;
             ctx.beginPath();
@@ -1030,7 +1030,7 @@
         ctx.textBaseline = "middle";
         ctx.textAlign = "center";
         var string = String($("#nameColor").val());
-        ctx.fillStyle = "#" + string;
+        ctx.fillStyle = "#" + (!string ? "FFF" : string);
         ctx.strokeStyle = "#000";
         ctx.translate(canvas.width / 2, 2 * size);
         (ctx.lineWidth !== 1) && ctx.strokeText(text, 0, 0);
