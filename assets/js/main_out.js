@@ -334,10 +334,6 @@
                 border.top = reader.getFloat64();
                 border.right = reader.getFloat64();
                 border.bottom = reader.getFloat64();
-                //minX = border.left;
-                //minY = border.top;
-                //maxX = border.right;
-                //maxY = border.bottom;
                 border.width = border.right - border.left;
                 border.height = border.bottom - border.top;
                 border.centerX = (border.left + border.right) / 2;
@@ -492,10 +488,6 @@
         mouseX = NaN,
         mouseY = NaN,
         mouseZ = 1;
-        //minX = 0,
-        //minY = 0,
-        //maxX = 0,
-        //maxY = 0;
     var settings = {
         mobile: "createTouch" in document,
         showMass: 1,
@@ -511,7 +503,7 @@
         cellBorders: 1,
         infiniteZoom: 0,
         transparency: 0,
-        mapBorders: 1,
+        mapBorders: 0,
         allowGETipSet: 0
     };
     var pressed = {
@@ -730,13 +722,14 @@
         mainCtx.lineTo(border.left, border.bottom);
         mainCtx.closePath();
         mainCtx.stroke();
+        //mainCtx.restore();
     }
     /*function drawSectors() {
-        //if (!showSectors) return;
+        //if (!settings.showSectors) return;
         mainCtx.strokeRect(border.left, border.top, 500, 500);
         var x = Math.round(border.left),
             y = Math.round(border.bottom),
-            letter = "EDCBA".split(""),
+            letter = "ABCDE".split(""),
             w = (Math.round(border.right) - x) / 5,
             h = (Math.round(border.top) - y) / 5;
         mainCtx.save();
