@@ -208,9 +208,11 @@
         wsSend(UINT8_254);
         wsSend(UINT8_255);
         log.debug(`WS connected, using https: ${USE_HTTPS}`);
+        console.log("Socket open");
     }
     function wsError(error) {
         log.warn(error);
+        console.log("Socket error");
     }
     function wsClose(e) {
         log.debug(`WS disconnected ${e.code} '${e.reason}'`);
@@ -220,6 +222,7 @@
             if (ws && ws.readyState === 1) return;
             wsInit(WS_URL);
         }, disconnectDelay *= 1.5);
+        console.log("Socket closed");
     }
     function wsSend(data) {
         if (!ws) return;
@@ -668,12 +671,12 @@
                 ctx.fillStyle = leaderboard.teams[i];
                 ctx.beginPath();
                 ctx.moveTo(100, 140);
-                ctx.arc(100, 140, 80, last, (last += leaderboard.items[i] * Math.PI * 2), 0);
+                ctx.arc(50, 140, 80, last, (last += leaderboard.items[i] * Math.PI * 2), 0);
                 ctx.closePath();
                 ctx.fill();
             }
         } else {
-            var text, isMe = 0, w;
+            var text, isMe = 0;
             ctx.font = "20px Ubuntu";
             for (var i = 0; i < len; i++) {
                 if (leaderboard.type === "text") text = leaderboard.items[i];
@@ -977,8 +980,8 @@
                 ctx.lineTo(this.x, this.y + this.s + 3);
             } else ctx.arc(this.x, this.y, this.s, 0, Math.PI * 2, 0);
             ctx.closePath();
-            if (this.destroyed) ctx.globalAlpha = Math.max(200 - Date.now() + this.dead, 0) / 100;
-            else if (settings.transparency) ctx.globalAlpha = .5;
+            if (settings.transparency) ctx.globalAlpha = .75;
+            else if (this.destroyed) ctx.globalAlpha = Math.max(200 - Date.now() + this.dead, 0) / 100;
             else ctx.globalAlpha = Math.min(Date.now() - this.born, 200) / 100;
             if (showCellBorder) ctx.stroke();
             ctx.fill();
@@ -1138,8 +1141,8 @@
         chatBox = document.getElementById("chat_textbox");
         mainCanvas.focus();
         function handleScroll(event) {
-            mouseZ *= Math.pow(.9, event.wheelDelta / -120 || event.detail || 0);
-            !settings.infiniteZoom && (1 > mouseZ && (mouseZ = 1));
+            mouseZ *= Math.pow(.95, event.wheelDelta / -120 || event.detail || 0);
+            settings.infiniteZoom || (1 > mouseZ && (mouseZ = 1));
             mouseZ > 4 / mouseZ && (mouseZ = 4 / mouseZ);
         }
         if (/firefox/i.test(navigator.userAgent)) document.addEventListener("DOMMouseScroll", handleScroll, 0);
@@ -1342,7 +1345,7 @@
         }
         window.requestAnimationFrame(drawGame);
     }
-    wHandle.setserver = function(arg) {
+    wHandle.setServer = function(arg) {
         if (WS_URL === arg) return;
         wsInit(arg);
     };
