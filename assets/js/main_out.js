@@ -511,6 +511,7 @@
         cellBorders: 1,
         infiniteZoom: 0,
         transparency: 0,
+        mapBorders: 1,
         allowGETipSet: 0
     };
     var pressed = {
@@ -716,28 +717,28 @@
         mainCtx.stroke();
         mainCtx.restore();
     }
-    /*function drawBorders() {
-        //if (!showBorders) return;
-        mainCtx.strokeStyle = "#F00";
-        mainCtx.save();
+    function drawBorders() {
+        if (!settings.mapBorders) return;
+        mainCtx.strokeStyle = '#F00';
         mainCtx.lineWidth = 20;
+        mainCtx.lineCap = "round";
+        mainCtx.lineJoin = "round";
         mainCtx.beginPath();
-        mainCtx.moveTo(minX, minY);
-        mainCtx.lineTo(maxX, minY);
-        mainCtx.lineTo(maxX, maxY);
-        mainCtx.lineTo(minX, maxY);
+        mainCtx.moveTo(border.left, border.top);
+        mainCtx.lineTo(border.right, border.top);
+        mainCtx.lineTo(border.right, border.bottom);
+        mainCtx.lineTo(border.left, border.bottom);
         mainCtx.closePath();
         mainCtx.stroke();
-        mainCtx.restore();
     }
-    function drawSectors() {
+    /*function drawSectors() {
         //if (!showSectors) return;
-        mainCtx.strokeRect(minX, maxY, 500, 500);
-        var x = Math.round(minX) + 65,
-            y = Math.round(minY) + 65,
-            letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""),
-            w = (Math.round(maxX) - 65 - x) / 5,
-            h = (Math.round(maxY) - 65 - y) / 5;
+        mainCtx.strokeRect(border.left, border.top, 500, 500);
+        var x = Math.round(border.left),
+            y = Math.round(border.bottom),
+            letter = "EDCBA".split(""),
+            w = (Math.round(border.right) - x) / 5,
+            h = (Math.round(border.top) - y) / 5;
         mainCtx.save();
         mainCtx.beginPath();
         mainCtx.lineWidth = .05;
@@ -745,18 +746,12 @@
         mainCtx.textBaseline = "middle";
         mainCtx.font = w * .6 + "px Russo One";
         mainCtx.fillStyle = "#1A1A1A";
-        var j = 0;
-        for (; 5 > j; j++) {
-            var i = 0;
-            for (; 5 > i; i++) mainCtx.fillText(letter[j] + (i + 1), x + w * i + w / 2, y + h * j + h / 2);
-        }
+        for (var j = 0; 5 > j; j++)
+            for (var i = 0; 5 > i; i++) mainCtx.fillText(letter[j] + (i + 1), x + w * i + w / 2, y + h * j + h / 2);
         mainCtx.lineWidth = 100;
         mainCtx.strokeStyle = "#1A1A1A";
-        j = 0;
-        for (; 5 > j; j++) {
-            i = 0;
-            for (; 5 > i; i++) mainCtx.strokeRect(x + w * i, y + h * j, w, h);
-        }
+        for (j = 0; 5 > j; j++)
+            for (i = 0; 5 > i; i++) mainCtx.strokeRect(x + w * i, y + h * j, w, h);
         mainCtx.stroke();
         mainCtx.restore();
     }*/
@@ -798,7 +793,7 @@
         mainCtx.fill();
         // draw name above user's pos if they have a cell on the screen
         var cell = null;
-        for (var i = 0, l = cells.mine.length; i < l; i++) {
+        for (var i = 0; i < cells.mine.length; i++) {
             if (cells.byId.hasOwnProperty(cells.mine[i])) {
                 cell = cells.byId[cells.mine[i]];
                 break;
@@ -823,6 +818,8 @@
         mainCtx.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
         if (!settings.hideGrid) drawGrid();
         toCamera(mainCtx);
+        drawBorders();
+        //drawSectors();
         for (var i = 0; i < drawList.length; i++) drawList[i].draw(mainCtx);
         fromCamera(mainCtx);
         mainCtx.scale(viewMult, viewMult);
@@ -848,8 +845,6 @@
             mainCtx.globalAlpha = 1;
         }
         drawMinimap();
-        //drawSectors();
-        //drawBorders();
         mainCtx.restore();
         cacheCleanup();
         wHandle.requestAnimationFrame(drawGame);
@@ -964,7 +959,7 @@
             ctx.strokeStyle = (color === '000000' || color === '000' || !color) ?
                 (settings.showColor ? this.sColor : Cell.prototype.sColor) : "#" + color;
             var size = String($("#cellBorderSize").val());
-            ctx.lineWidth = (!size || size > 50 || size === 1) ? Math.max(~~(this.s / 50), 10) : size;
+            ctx.lineWidth = (!size || size > 50) ? Math.max(~~(this.s / 50), 10) : size;
             var showCellBorder = settings.cellBorders && !this.food && !this.ejected && 20 < this.s;
             if (showCellBorder) this.s -= ctx.lineWidth / 2 - 2;
             ctx.beginPath();
@@ -1384,6 +1379,9 @@
     };
     wHandle.setTransparency = function(a) {
         settings.transparency = a;
+    };
+    wHandle.setMapBorders = function(a) {
+        settings.mapBorders = a;
     };
     wHandle.spectate = function(a) {
         wsSend(UINT8[1]);
