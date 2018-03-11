@@ -716,8 +716,8 @@
         if (!settings.mapBorders || !isConnected) return;
         mainCtx.strokeStyle = '#F00';
         mainCtx.lineWidth = 20;
-        mainCtx.lineCap = "round";
-        mainCtx.lineJoin = "round";
+        //mainCtx.lineCap = "round";
+        //mainCtx.lineJoin = "round";
         mainCtx.beginPath();
         mainCtx.moveTo(border.left, border.top);
         mainCtx.lineTo(border.right, border.top);
