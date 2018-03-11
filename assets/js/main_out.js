@@ -203,6 +203,7 @@
         ws.onclose = wsClose;
     }
     function wsOpen() {
+        isConnected = 1;
         disconnectDelay = 1000;
         wjQuery("#connecting").hide();
         wsSend(UINT8_254);
@@ -215,6 +216,7 @@
         console.log("Socket error");
     }
     function wsClose(e) {
+        isConnected = 0;
         log.debug(`WS disconnected ${e.code} '${e.reason}'`);
         wsCleanup();
         gameReset();
@@ -466,6 +468,7 @@
     });
     var ws = null,
         WS_URL = null,
+        isConnected = 0,
         disconnectDelay = 1000,
         syncUpdStamp = Date.now(),
         syncAppStamp = Date.now(),
@@ -492,7 +495,6 @@
         mobile: "createTouch" in document,
         showMass: 1,
         showNames: 1,
-        showLeaderboard: 1,
         hideChat: 0,
         showTextOutline: 1,
         showColor: 1,
@@ -503,7 +505,8 @@
         cellBorders: 1,
         infiniteZoom: 0,
         transparency: 0,
-        mapBorders: 0,
+        mapBorders: 1,
+        sectors: 1,
         allowGETipSet: 0
     };
     var pressed = {
@@ -710,7 +713,7 @@
         mainCtx.restore();
     }
     function drawBorders() {
-        if (!settings.mapBorders) return;
+        if (!settings.mapBorders || !isConnected) return;
         mainCtx.strokeStyle = '#F00';
         mainCtx.lineWidth = 20;
         mainCtx.lineCap = "round";
@@ -722,16 +725,15 @@
         mainCtx.lineTo(border.left, border.bottom);
         mainCtx.closePath();
         mainCtx.stroke();
-        //mainCtx.restore();
     }
-    /*function drawSectors() {
-        //if (!settings.showSectors) return;
-        mainCtx.strokeRect(border.left, border.top, 500, 500);
-        var x = Math.round(border.left),
-            y = Math.round(border.bottom),
-            letter = "ABCDE".split(""),
-            w = (Math.round(border.right) - x) / 5,
-            h = (Math.round(border.top) - y) / 5;
+    function drawSectors() {
+        if (!settings.sectors || !isConnected) return;
+        //mainCtx.strokeRect(border.left, border.top, 500, 500);
+        var x = border.left + 65;
+        var y = border.bottom - 65;
+        var letter = "ABCDE".split("");
+        var w = (border.right - 65 - x) / 5;
+        var h = (border.top + 65 - y) / 5;
         mainCtx.save();
         mainCtx.beginPath();
         mainCtx.lineWidth = .05;
@@ -740,17 +742,17 @@
         mainCtx.font = w * .6 + "px Russo One";
         mainCtx.fillStyle = "#1A1A1A";
         for (var j = 0; 5 > j; j++)
-            for (var i = 0; 5 > i; i++) mainCtx.fillText(letter[j] + (i + 1), x + w * i + w / 2, y + h * j + h / 2);
+            for (var i = 0; 5 > i; i++) mainCtx.fillText(letter[j] + (i + 1), x + w * j + w / 2, (-y + 2775) + h * -i + h / 2);
         mainCtx.lineWidth = 100;
         mainCtx.strokeStyle = "#1A1A1A";
         for (j = 0; 5 > j; j++)
             for (i = 0; 5 > i; i++) mainCtx.strokeRect(x + w * i, y + h * j, w, h);
-        mainCtx.stroke();
         mainCtx.restore();
-    }*/
+        mainCtx.stroke();
+    }
     function drawMinimap() {
         // scramble level 2+ makes the minimap unusable, and is detectable with a non-zero map center
-        if (border.centerX !== 0 || border.centerY !== 0 || !settings.showMinimap) return;
+        if (!isConnected || !settings.showMinimap) return;
         mainCtx.save();
         var targetSize = 200;
         var width = targetSize * (border.width / border.height);
@@ -812,7 +814,7 @@
         if (!settings.hideGrid) drawGrid();
         toCamera(mainCtx);
         drawBorders();
-        //drawSectors();
+        drawSectors();
         for (var i = 0; i < drawList.length; i++) drawList[i].draw(mainCtx);
         fromCamera(mainCtx);
         mainCtx.scale(viewMult, viewMult);
@@ -1375,6 +1377,12 @@
     };
     wHandle.setMapBorders = function(a) {
         settings.mapBorders = a;
+    };
+    wHandle.setSectors = function(a) {
+        settings.sectors = a;
+    };
+    wHandle.setTextOutline = function(a) {
+        settings.showTextOutline = a;
     };
     wHandle.spectate = function(a) {
         wsSend(UINT8[1]);
