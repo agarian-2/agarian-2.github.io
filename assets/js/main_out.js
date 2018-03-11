@@ -752,27 +752,27 @@
         mainCtx.stroke();
     }
     function drawMinimap() {
-        // scramble level 2+ makes the minimap unusable, and is detectable with a non-zero map center
-        if (!isConnected || !settings.showMinimap) return;
+        if (!isConnected || border.centerX !== 0 ||
+            border.centerY !== 0 || !settings.showMinimap) return;
         mainCtx.save();
-        var targetSize = 200;
-        var width = targetSize * (border.width / border.height);
-        var height = targetSize * (border.height / border.width);
-        var beginX = mainCanvas.width / viewMult - width;
-        var beginY = mainCanvas.height / viewMult - height;
+        var targetSize = 200,
+            width = targetSize * (border.width / border.height),
+            height = targetSize * (border.height / border.width),
+            beginX = mainCanvas.width / viewMult - width,
+            beginY = mainCanvas.height / viewMult - height;
         mainCtx.fillStyle = "#000";
         mainCtx.globalAlpha = .4;
         mainCtx.fillRect(beginX, beginY, width, height);
         mainCtx.globalAlpha = 1;
-        var sectorCount = 5;
-        var sectorNames = ["ABCDE", "12345"];
-        var sectorWidth = width / sectorCount;
-        var sectorHeight = height / sectorCount;
-        var sectorNameSize = Math.min(sectorWidth, sectorHeight) / 3;
+        var sectorCount = 5,
+            sectorNames = ["ABCDE", "12345"],
+            sectorWidth = width / sectorCount,
+            sectorHeight = height / sectorCount,
+            sectorNameSize = Math.min(sectorWidth, sectorHeight) / 3;
         mainCtx.fillStyle = settings.darkTheme ? "#666" : "#DDD";
         mainCtx.textBaseline = "middle";
         mainCtx.textAlign = "center";
-        mainCtx.font = `${sectorNameSize}px Russo One`;
+        mainCtx.font = `${sectorNameSize}px Ubuntu`;
         for (var i = 0; i < sectorCount; i++) {
             var x = sectorWidth / 2 + i * sectorWidth;
             for (var j = 0; j < sectorCount; j++) {
@@ -780,26 +780,42 @@
                 mainCtx.fillText(`${sectorNames[0][i]}${sectorNames[1][j]}`, beginX + x, beginY + y);
             }
         }
-        var myPosX = beginX + ((cameraX + border.width / 2) / border.width * width);
-        var myPosY = beginY + ((cameraY + border.height / 2) / border.height * height);
-        mainCtx.fillStyle = "#FAA";
+        var xScaler = width / border.width,
+            yScaler = height / border.height,
+            halfWidth = border.width / 2,
+            halfHeight = border.height / 2,
+            myPosX = beginX + (cameraX + halfWidth) * xScaler,
+            myPosY = beginY + (cameraY + halfHeight) * yScaler;
         mainCtx.beginPath();
-        mainCtx.arc(myPosX, myPosY, 5, 0, Math.PI * 2, 0);
-        mainCtx.closePath();
+        if (cells.mine.length) {
+            for (var i = 0; i < cells.mine.length; i++) {
+                var cell = cells.byId[cells.mine[i]];
+                if (cell) {
+                    mainCtx.fillStyle = cells.color;
+                    var x = beginX + (cell.x + halfWidth) * xScaler;
+                    var y = beginY + (cell.y + halfHeight) * yScaler;
+                    var r = cell.s * xScaler;
+                    mainCtx.moveTo(x + r, y);
+                    mainCtx.arc(x, y, r, 0, Math.PI * 2);
+                }
+            }
+        } else {
+            mainCtx.fillStyle = "#FAA";
+            mainCtx.arc(myPosX, myPosY, 5, 0, Math.PI * 2);
+        }
         mainCtx.fill();
-        // draw name above user's pos if they have a cell on the screen
+        // draw name above user's pos if he has a cell on the screen
         var cell = null;
-        for (var i = 0; i < cells.mine.length; i++) {
+        for (var i = 0, l = cells.mine.length; i < l; i++)
             if (cells.byId.hasOwnProperty(cells.mine[i])) {
                 cell = cells.byId[cells.mine[i]];
                 break;
             }
-        }
         if (cell !== null) {
             mainCtx.fillStyle = settings.darkTheme ? "#DDD" : "#222";
             var textSize = sectorNameSize;
             mainCtx.font = `${textSize}px Ubuntu`;
-            mainCtx.fillText(cell.name, myPosX, myPosY - 7 - textSize / 2);
+            mainCtx.fillText(cell.name, myPosX, myPosY - 10 - textSize / 2);
         }
         mainCtx.restore();
     }
@@ -824,10 +840,18 @@
         mainCtx.textBaseline = "top";
         if (!isNaN(stats.score)) {
             mainCtx.font = "30px Ubuntu";
-            if (!settings.showPos) var pos = "";
+            if (!settings.showPos || !isConnected) var pos = "";
             else pos = `| Position: (${~~cameraX}, ${~~cameraY})`;
             mainCtx.fillText(`Score: ${stats.score} ${pos}`, 2, height);
             height += 30;
+        } else {
+            mainCtx.font = "30px Ubuntu";
+            if (!settings.showPos || !isConnected) var pos = "";
+            else {
+                pos = `Position: (${~~cameraX}, ${~~cameraY})`;
+                mainCtx.fillText(`${pos}`, 2, height);
+                height += 30;
+            }
         }
         mainCtx.font = "20px Ubuntu";
         var gameStatsText = `${~~stats.framesPerSecond} FPS`;
