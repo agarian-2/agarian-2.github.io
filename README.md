@@ -21,5 +21,6 @@ What's new (mostly options):
  - Option to change your name color.
  - Option to change your cell border color.
  - Option to change your cell border size.
+ - Minimap draws all your cells.
  - Some 'important' links for you to check out.
  - Some small optimizations here-and-there.
