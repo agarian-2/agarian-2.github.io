@@ -507,6 +507,7 @@
         transparency: 0,
         mapBorders: 0,
         sectors: 0,
+        showPos: 0,
         allowGETipSet: 0
     };
     var pressed = {
@@ -823,13 +824,14 @@
         mainCtx.textBaseline = "top";
         if (!isNaN(stats.score)) {
             mainCtx.font = "30px Ubuntu";
-            mainCtx.fillText(`Score: ${stats.score}`, 2, height);
-            //mainCtx.fillText(`Position: (${x}, ${y})`, 200, height);
+            if (!settings.showPos) var pos = "";
+            else pos = `| Position: (${~~cameraX}, ${~~cameraY})`;
+            mainCtx.fillText(`Score: ${stats.score} ${pos}`, 2, height);
             height += 30;
         }
         mainCtx.font = "20px Ubuntu";
         var gameStatsText = `${~~stats.framesPerSecond} FPS`;
-        if (!isNaN(stats.latency)) gameStatsText += ` ${stats.latency}ms ping`;
+        if (!isNaN(stats.latency)) gameStatsText += ` | ${stats.latency}ms ping`;
         mainCtx.fillText(gameStatsText, 2, height);
         height += 24;
         if (stats.visible) mainCtx.drawImage(stats.canvas, 2, height);
@@ -1380,6 +1382,9 @@
     };
     wHandle.setSectors = function(a) {
         settings.sectors = a;
+    };
+    wHandle.setCellPos = function(a) {
+        settings.showPos = a;
     };
     wHandle.setTextOutline = function(a) {
         settings.showTextOutline = a;
