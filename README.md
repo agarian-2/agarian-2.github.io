@@ -6,4 +6,4 @@ Things to note:
  - Skins are broken at the moment.
  - I am not in a position to help anybody who has an issue with my client, unless I find it necessary.
  - This client is NOT owned by me (original located at https://github.com/Luka967/Cigar).
- - Update will usually come often.
+ - Updates will usually come often.
