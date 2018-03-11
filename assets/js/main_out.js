@@ -493,20 +493,20 @@
         mouseZ = 1;
     var settings = {
         mobile: "createTouch" in document,
-        showMass: 0,
+        showMass: 1,
         showNames: 1,
         hideChat: 0,
         showTextOutline: 1,
         showColor: 1,
         showSkins: 1,
         showMinimap: 1,
-        darkTheme: 0,
+        darkTheme: 1,
         hideGrid: 0,
         cellBorders: 1,
         infiniteZoom: 0,
         transparency: 0,
-        mapBorders: 0,
-        sectors: 0,
+        mapBorders: 1,
+        sectors: 1,
         allowGETipSet: 0
     };
     var pressed = {
@@ -666,8 +666,8 @@
             for (var i = 0; i < len; i++) {
                 ctx.fillStyle = leaderboard.teams[i];
                 ctx.beginPath();
-                ctx.moveTo(100, 140);
-                ctx.arc(50, 140, 80, last, (last += leaderboard.items[i] * Math.PI * 2), 0);
+                ctx.moveTo(125, 140);
+                ctx.arc(125, 140, 80, last, (last += leaderboard.items[i] * Math.PI * 2), 0);
                 ctx.closePath();
                 ctx.fill();
             }
