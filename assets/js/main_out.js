@@ -755,46 +755,44 @@
         if (!isConnected || border.centerX !== 0 ||
             border.centerY !== 0 || !settings.showMinimap) return;
         mainCtx.save();
-        var targetSize = 200,
-            width = targetSize * (border.width / border.height),
-            height = targetSize * (border.height / border.width),
-            beginX = mainCanvas.width / viewMult - width,
-            beginY = mainCanvas.height / viewMult - height;
+        var w = 200 * (border.width / border.height),
+            h = 200 * (border.height / border.width),
+            bx = mainCanvas.width / viewMult - w,
+            by = mainCanvas.height / viewMult - h;
         mainCtx.fillStyle = "#000";
-        mainCtx.globalAlpha = .4;
-        mainCtx.fillRect(beginX, beginY, width, height);
+        mainCtx.globalAlpha = 0.4;
+        mainCtx.fillRect(bx, by, w, h);
         mainCtx.globalAlpha = 1;
-        var sectorCount = 5,
-            sectorNames = ["ABCDE", "12345"],
-            sectorWidth = width / sectorCount,
-            sectorHeight = height / sectorCount,
+        var sectorNames = ["ABCDE", "12345"],
+            sectorWidth = w / 5,
+            sectorHeight = h / 5,
             sectorNameSize = Math.min(sectorWidth, sectorHeight) / 3;
         mainCtx.fillStyle = settings.darkTheme ? "#666" : "#DDD";
         mainCtx.textBaseline = "middle";
         mainCtx.textAlign = "center";
         mainCtx.font = `${sectorNameSize}px Ubuntu`;
-        for (var i = 0; i < sectorCount; i++) {
+        for (var i = 0; i < 5; i++) {
             var x = sectorWidth / 2 + i * sectorWidth;
-            for (var j = 0; j < sectorCount; j++) {
+            for (var j = 0; j < 5; j++) {
                 var y = sectorHeight / 2 + j * sectorHeight;
-                mainCtx.fillText(`${sectorNames[0][i]}${sectorNames[1][j]}`, beginX + x, beginY + y);
+                mainCtx.fillText(`${sectorNames[0][i]}${sectorNames[1][j]}`, bx + x, by + y);
             }
         }
-        var xScaler = width / border.width,
-            yScaler = height / border.height,
-            halfWidth = border.width / 2,
-            halfHeight = border.height / 2,
-            myPosX = beginX + (cameraX + halfWidth) * xScaler,
-            myPosY = beginY + (cameraY + halfHeight) * yScaler;
+        var xScaler = w / border.width,   
+            yScaler = h / border.height,   
+            halfWidth = border.width / 2,   
+            halfHeight = border.height / 2,   
+            myPosX = bx + (cameraX + halfWidth) * xScaler,   
+            myPosY = by + (cameraY + halfHeight) * yScaler;
         mainCtx.beginPath();
         if (cells.mine.length) {
             for (var i = 0; i < cells.mine.length; i++) {
                 var cell = cells.byId[cells.mine[i]];
                 if (cell) {
-                    mainCtx.fillStyle = cells.color;
-                    var x = beginX + (cell.x + halfWidth) * xScaler;
-                    var y = beginY + (cell.y + halfHeight) * yScaler;
-                    var r = cell.s * xScaler;
+                    mainCtx.fillStyle = cell.color;
+                    var x = bx + (cell.x + halfWidth) * xScaler,
+                        y = by + (cell.y + halfHeight) * yScaler,
+                        r = cell.s * xScaler;
                     mainCtx.moveTo(x + r, y);
                     mainCtx.arc(x, y, r, 0, Math.PI * 2);
                 }
@@ -815,7 +813,7 @@
             mainCtx.fillStyle = settings.darkTheme ? "#DDD" : "#222";
             var textSize = sectorNameSize;
             mainCtx.font = `${textSize}px Ubuntu`;
-            mainCtx.fillText(cell.name, myPosX, myPosY - 10 - textSize / 2);
+            mainCtx.fillText(cell.name, myPosX, myPosY - 7 - textSize / 2);
         }
         mainCtx.restore();
     }
