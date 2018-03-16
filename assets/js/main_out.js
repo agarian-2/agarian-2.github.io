@@ -493,21 +493,21 @@
         mouseZ = 1;
     var settings = {
         mobile: "createTouch" in document,
-        showMass: 1,
+        showMass: 0,
         showNames: 1,
         hideChat: 0,
         showTextOutline: 1,
         showColor: 1,
         showSkins: 1,
         showMinimap: 1,
-        darkTheme: 1,
+        darkTheme: 0,
         hideGrid: 0,
         cellBorders: 1,
         infiniteZoom: 0,
         transparency: 0,
-        mapBorders: 1,
-        sectors: 1,
-        showPos: 1,
+        mapBorders: 0,
+        sectors: 0,
+        showPos: 0,
         hideFood: 0,
         allowGETipSet: 0
     };
