@@ -213,7 +213,7 @@
     }
     function wsError(error) {
         log.warn(error);
-        console.log("Socket error");
+        /*throw new Error*/console.log("Socket error");
     }
     function wsClose(e) {
         isConnected = 0;
@@ -493,21 +493,22 @@
         mouseZ = 1;
     var settings = {
         mobile: "createTouch" in document,
-        showMass: 0,
+        showMass: 1,
         showNames: 1,
         hideChat: 0,
         showTextOutline: 1,
         showColor: 1,
         showSkins: 1,
         showMinimap: 1,
-        darkTheme: 0,
+        darkTheme: 1,
         hideGrid: 0,
         cellBorders: 1,
         infiniteZoom: 0,
         transparency: 0,
-        mapBorders: 0,
-        sectors: 0,
-        showPos: 0,
+        mapBorders: 1,
+        sectors: 1,
+        showPos: 1,
+        hideFood: 0,
         allowGETipSet: 0
     };
     var pressed = {
@@ -752,68 +753,68 @@
         mainCtx.stroke();
     }
     function drawMinimap() {
+        // Rendered unusable when the scrambling level is 2 or more, or when there is a non-zero map center.
         if (!isConnected || border.centerX !== 0 ||
             border.centerY !== 0 || !settings.showMinimap) return;
         mainCtx.save();
-        var w = 200 * (border.width / border.height),
-            h = 200 * (border.height / border.width),
-            bx = mainCanvas.width / viewMult - w,
-            by = mainCanvas.height / viewMult - h;
+        var width = 200 * (border.width / border.height),
+            height = 200 * (border.height / border.width),
+            beginX = mainCanvas.width / viewMult - width,
+            beginY = mainCanvas.height / viewMult - height;
         mainCtx.fillStyle = "#000";
-        mainCtx.globalAlpha = 0.4;
-        mainCtx.fillRect(bx, by, w, h);
+        mainCtx.globalAlpha = .4;
+        mainCtx.fillRect(beginX, beginY, width, height);
         mainCtx.globalAlpha = 1;
         var sectorNames = ["ABCDE", "12345"],
-            sectorWidth = w / 5,
-            sectorHeight = h / 5,
+            sectorWidth = width / 5,
+            sectorHeight = height / 5,
             sectorNameSize = Math.min(sectorWidth, sectorHeight) / 3;
         mainCtx.fillStyle = settings.darkTheme ? "#666" : "#DDD";
         mainCtx.textBaseline = "middle";
         mainCtx.textAlign = "center";
-        mainCtx.font = `${sectorNameSize}px Ubuntu`;
+        mainCtx.font = `${sectorNameSize}px Russo One`;
         for (var i = 0; i < 5; i++) {
             var x = sectorWidth / 2 + i * sectorWidth;
             for (var j = 0; j < 5; j++) {
                 var y = sectorHeight / 2 + j * sectorHeight;
-                mainCtx.fillText(`${sectorNames[0][i]}${sectorNames[1][j]}`, bx + x, by + y);
+                mainCtx.fillText(`${sectorNames[0][i]}${sectorNames[1][j]}`, beginX + x, beginY + y);
             }
         }
-        var xScaler = w / border.width,   
-            yScaler = h / border.height,   
+        var scaleX = width / border.width,   
+            scaleY = height / border.height,   
             halfWidth = border.width / 2,   
             halfHeight = border.height / 2,   
-            myPosX = bx + (cameraX + halfWidth) * xScaler,   
-            myPosY = by + (cameraY + halfHeight) * yScaler;
+            posX = beginX + (cameraX + halfWidth) * scaleX,   
+            posY = beginY + (cameraY + halfHeight) * scaleY;
         mainCtx.beginPath();
         if (cells.mine.length) {
             for (var i = 0; i < cells.mine.length; i++) {
                 var cell = cells.byId[cells.mine[i]];
                 if (cell) {
                     mainCtx.fillStyle = cell.color;
-                    var x = bx + (cell.x + halfWidth) * xScaler,
-                        y = by + (cell.y + halfHeight) * yScaler,
-                        r = cell.s * xScaler;
-                    mainCtx.moveTo(x + r, y);
-                    mainCtx.arc(x, y, r, 0, Math.PI * 2);
+                    x = beginX + (cell.x + halfWidth) * scaleX;
+                    y = beginY + (cell.y + halfHeight) * scaleY;
+                    mainCtx.moveTo(x + cell.s * scaleX, y);
+                    mainCtx.arc(x, y, cell.s * scaleX, 0, Math.PI * 2);
                 }
             }
         } else {
             mainCtx.fillStyle = "#FAA";
-            mainCtx.arc(myPosX, myPosY, 5, 0, Math.PI * 2);
+            mainCtx.arc(posX, posY, 5, 0, Math.PI * 2);
         }
         mainCtx.fill();
-        // draw name above user's pos if he has a cell on the screen
-        var cell = null;
-        for (var i = 0, l = cells.mine.length; i < l; i++)
+        // Draw name above user's pos if he has a cell on the screen
+        cell = null;
+        for (var i = 0, l = cells.mine.length; i < l; i++) {
             if (cells.byId.hasOwnProperty(cells.mine[i])) {
                 cell = cells.byId[cells.mine[i]];
                 break;
             }
+        }
         if (cell !== null) {
             mainCtx.fillStyle = settings.darkTheme ? "#DDD" : "#222";
-            var textSize = sectorNameSize;
-            mainCtx.font = `${textSize}px Ubuntu`;
-            mainCtx.fillText(cell.name, myPosX, myPosY - 7 - textSize / 2);
+            mainCtx.font = `${sectorNameSize}px Ubuntu`;
+            mainCtx.fillText(cell.name, posX, posY - 7 - sectorNameSize / 2);
         }
         mainCtx.restore();
     }
@@ -973,6 +974,7 @@
             ctx.restore();
         },
         drawShape: function(ctx) {
+            if (settings.hideFood && this.food) return;
             ctx.fillStyle = settings.showColor ? this.color : Cell.prototype.color;
             var color = String($("#cellBorderColor").val());
             ctx.strokeStyle = (color === '000000' || color === '000' || !color) ?
@@ -1189,7 +1191,7 @@
                     pressed.q = 1;
                     break;
                 case 69: // E
-                    if (isTyping || overlayShown || pressed.e) break;
+                    if (isTyping || overlayShown) break;
                     wsSend(UINT8[22]);
                     pressed.e = 1;
                     break;
@@ -1269,7 +1271,7 @@
                     pressed.c = 1;
                     break;
                 case 71: // J
-                    if (isTyping || overlayShown || pressed.j) break;
+                    if (isTyping || overlayShown) break;
                     wsSend(UINT8[39]);
                     pressed.j = 1;
                     break;
@@ -1350,7 +1352,7 @@
             viewMult = Math.sqrt(Math.min(cH / 1080, cW / 1920));
         };
         wHandle.onresize();
-        log.info(`init completed in ${Date.now() - DATE}ms`);
+        log.info(`Init completed in ${Date.now() - DATE}ms`);
         gameReset();
         showOverlay();
         if (settings.allowGETipSet && wHandle.location.search) {
@@ -1363,61 +1365,64 @@
         if (WS_URL === arg) return;
         wsInit(arg);
     };
-    wHandle.setDarkTheme = function(a) {
-        settings.darkTheme = a;
+    wHandle.setDarkTheme = function(arg) {
+        settings.darkTheme = arg;
         drawStats();
     };
-    wHandle.setShowMass = function(a) {
-        settings.showMass = a;
+    wHandle.setShowMass = function(arg) {
+        settings.showMass = arg;
     };
-    wHandle.setSkins = function(a) {
-        settings.showSkins = a;
+    wHandle.setSkins = function(arg) {
+        settings.showSkins = arg;
     };
-    wHandle.setColors = function(a) {
-        settings.showColor = !a;
+    wHandle.setColors = function(arg) {
+        settings.showColor = !arg;
     };
-    wHandle.setNames = function(a) {
-        settings.showNames = a;
+    wHandle.setNames = function(arg) {
+        settings.showNames = arg;
         drawLeaderboard();
     };
-    wHandle.setChatHide = function(a) {
-        settings.hideChat = a;
+    wHandle.setChatHide = function(arg) {
+        settings.hideChat = arg;
         settings.hideChat ? wjQuery('#chat_textbox').hide() : wjQuery('#chat_textbox').show();
     };
-    wHandle.setMinimap = function(a) {
-        settings.showMinimap = !a;
+    wHandle.setMinimap = function(arg) {
+        settings.showMinimap = !arg;
     };
-    wHandle.setGrid = function(a) {
-        settings.hideGrid = a;
+    wHandle.setGrid = function(arg) {
+        settings.hideGrid = arg;
     };
-    wHandle.setCellBorder = function(a) {
-        settings.cellBorders = a;
+    wHandle.setCellBorder = function(arg) {
+        settings.cellBorders = arg;
     };
-    wHandle.setZoom = function(a) {
-        settings.infiniteZoom = a;
+    wHandle.setZoom = function(arg) {
+        settings.infiniteZoom = arg;
     };
-    wHandle.setTransparency = function(a) {
-        settings.transparency = a;
+    wHandle.setTransparency = function(arg) {
+        settings.transparency = arg;
     };
-    wHandle.setMapBorders = function(a) {
-        settings.mapBorders = a;
+    wHandle.setMapBorders = function(arg) {
+        settings.mapBorders = arg;
     };
-    wHandle.setSectors = function(a) {
-        settings.sectors = a;
+    wHandle.setSectors = function(arg) {
+        settings.sectors = arg;
     };
-    wHandle.setCellPos = function(a) {
-        settings.showPos = a;
+    wHandle.setCellPos = function(arg) {
+        settings.showPos = arg;
     };
-    wHandle.setTextOutline = function(a) {
-        settings.showTextOutline = a;
+    wHandle.setTextOutline = function(arg) {
+        settings.showTextOutline = arg;
     };
-    wHandle.spectate = function(a) {
+    wHandle.setFood = function(arg) {
+        settings.hideFood = arg;
+    };
+    wHandle.spectate = function() {
         wsSend(UINT8[1]);
         stats.maxScore = 0;
         hideOverlay();
     };
-    wHandle.play = function(a) {
-        sendPlay(a);
+    wHandle.play = function(arg) {
+        sendPlay(arg);
         hideOverlay();
     };
     wHandle.onload = init;
