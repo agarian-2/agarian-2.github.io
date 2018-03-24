@@ -715,7 +715,8 @@
         mainCtx.restore();
     }
     function drawBorders() {
-        if (!settings.mapBorders || !isConnected) return;
+        if (!isConnected || border.centerX !== 0 ||
+            border.centerY !== 0 || !settings.mapBorders) return;
         mainCtx.strokeStyle = '#F00';
         mainCtx.lineWidth = 20;
         //mainCtx.lineCap = "round";
@@ -729,7 +730,8 @@
         mainCtx.stroke();
     }
     function drawSectors() {
-        if (!settings.sectors || !isConnected) return;
+        if (!isConnected || border.centerX !== 0 ||
+            border.centerY !== 0 || !settings.sectors) return;
         //mainCtx.strokeRect(border.left, border.top, 500, 500);
         var x = border.left + 65;
         var y = border.bottom - 65;
@@ -744,7 +746,7 @@
         mainCtx.font = w * .6 + "px Russo One";
         mainCtx.fillStyle = "#1A1A1A";
         for (var j = 0; 5 > j; j++)
-            for (var i = 0; 5 > i; i++) mainCtx.fillText(letter[j] + (i + 1), x + w * j + w / 2, (-y + 2775) + h * -i + h / 2);
+            for (var i = 0; 5 > i; i++) mainCtx.fillText(letter[j] + (i + 1), x + w * j + w / 2, (-y - h) + h * -i + h / 2);
         mainCtx.lineWidth = 100;
         mainCtx.strokeStyle = "#1A1A1A";
         for (j = 0; 5 > j; j++)
@@ -780,18 +782,18 @@
                 mainCtx.fillText(`${sectorNames[0][i]}${sectorNames[1][j]}`, beginX + x, beginY + y);
             }
         }
-        var scaleX = width / border.width,   
-            scaleY = height / border.height,   
-            halfWidth = border.width / 2,   
-            halfHeight = border.height / 2,   
-            posX = beginX + (cameraX + halfWidth) * scaleX,   
+        var scaleX = width / border.width,
+            scaleY = height / border.height,
+            halfWidth = border.width / 2,
+            halfHeight = border.height / 2,
+            posX = beginX + (cameraX + halfWidth) * scaleX,
             posY = beginY + (cameraY + halfHeight) * scaleY;
         mainCtx.beginPath();
         if (cells.mine.length) {
             for (var i = 0; i < cells.mine.length; i++) {
                 var cell = cells.byId[cells.mine[i]];
                 if (cell) {
-                    mainCtx.fillStyle = cell.color;
+                    mainCtx.fillStyle = settings.showColor ? cell.color : '#FFF';
                     x = beginX + (cell.x + halfWidth) * scaleX;
                     y = beginY + (cell.y + halfHeight) * scaleY;
                     mainCtx.moveTo(x + cell.s * scaleX, y);
@@ -799,7 +801,7 @@
                 }
             }
         } else {
-            mainCtx.fillStyle = "#FAA";
+            mainCtx.fillStyle = "#FFF";
             mainCtx.arc(posX, posY, 5, 0, Math.PI * 2);
         }
         mainCtx.fill();
@@ -980,7 +982,7 @@
             ctx.strokeStyle = (color === '000000' || color === '000' || !color) ?
                 (settings.showColor ? this.sColor : Cell.prototype.sColor) : "#" + color;
             var size = String($("#cellBorderSize").val());
-            ctx.lineWidth = (!size || size > 50) ? Math.max(~~(this.s / 50), 10) : size;
+            ctx.lineWidth = (this.jagged) ? 12 : ((!size || size > 50) ? Math.max(~~(this.s / 50), 10) : size);
             var showCellBorder = settings.cellBorders && !this.food && !this.ejected && 20 < this.s;
             if (showCellBorder) this.s -= ctx.lineWidth / 2 - 2;
             ctx.beginPath();
