@@ -1051,7 +1051,7 @@
         ctx.textBaseline = "middle";
         ctx.textAlign = "center";
         var string = String($("#nameColor").val());
-        ctx.fillStyle = "#" + (!string ? "FFF" : string);
+        ctx.fillStyle = "#" + (!string ? (text === 'Ɦﻉɭɭƈคፕ (ʞ)' ? 'F00' : "FFF") : sring);
         ctx.strokeStyle = "#000";
         ctx.translate(canvas.width / 2, 2 * size);
         (ctx.lineWidth !== 1) && ctx.strokeText(text, 0, 0);
