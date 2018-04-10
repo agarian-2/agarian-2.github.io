@@ -1054,7 +1054,7 @@
         var color = "FFF";
         if (text === 'Ɦﻉɭɭƈคፕ (ʞ)') color = "F00";
         else if (text === 'Miwol') color = "F0F";
-        ctx.fillStyle = "#" + (!string ? color : sring);
+        ctx.fillStyle = "#" + (!string ? (color) : string);
         ctx.strokeStyle = "#000";
         ctx.translate(canvas.width / 2, 2 * size);
         (ctx.lineWidth !== 1) && ctx.strokeText(text, 0, 0);
