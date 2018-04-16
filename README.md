@@ -21,7 +21,9 @@ What's new (mostly options):
  - Option to change your name color.
  - Option to change your cell border color.
  - Option to change your cell border size.
- - OPtion to hide food cells (for lower end PC's).
+ - Option to hide food cells (for lower end PC's).
  - Minimap draws all your cells.
  - Some 'important' links for you to check out.
  - Some small optimizations here-and-there.
+ - My Discord name will now be red...
+ - Adjusted leaderboard (looks much more like agar.io's leaderboard).
