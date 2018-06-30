@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Eat cells smaller than you and avoid getting eaten by bigger ones!">
+    <meta name="description" content="An agar.io client made for MultiOgar based servers.">
     <meta name="keywords" content="agario, agar, io, cell, cells, virus, bacteria, blob, game, games, web game, html5, fun, flash">
     <meta name="robots" content="index, follow">
     <meta property="og:image" content="http://agar.io/img/1200x630.png" />
@@ -21,20 +21,22 @@
     <script src="assets/js/main_out.js"></script>
     <script>
         // Macro for shift split
-        function keydown(e) {
-            if (16 == e.keyCode)
-                for (var o = 0; o < 5; o++) setTimeout(split, 50 * o);
-            if (65 == e.keyCode)
-                for (var t = 0; t < 3; t++) setTimeout(split, 50 * t);
-            if (68 == e.keyCode) split(), setTimeout(split, 50);
-        } /*global $*/
+        /*global $*/
+        function keydown(event) {
+            if (event.keyCode == 16) for (var i = 0; i < 5; i++) setTimeout(split, 50 * i);
+            if (event.keyCode == 65) for (var j = 0; j < 3; j++) setTimeout(split, 50 * j);
+            if (event.keyCode == 68) {
+                split();
+                setTimeout(split, 50);
+            }
+        }
         function split() {
             $("body").trigger($.Event("keydown", {
-                    keyCode: 32
-                })),
-                $("body").trigger($.Event("keyup", {
-                    keyCode: 32
-                }));
+                keyCode: 32
+            }));
+            $("body").trigger($.Event("keyup", {
+                keyCode: 32
+            }));
         }
         window.addEventListener("keydown", keydown);
     </script>
