@@ -1019,7 +1019,7 @@
         },
         drawText: function(ctx) {
             if (this.s < 20 || this.jagged) return;
-            if (settings.showMass && (cells.mine.indexOf(this.id) !== -1 || cells.mine.length === 0)) {
+            if (settings.showMass && (cells.mine.indexOf(this.id) !== -1 || cells.mine.length === 0) && !this.food) {
                 var mass = (~~(this.s * this.s / 100)).toString();
                 if (this.name && settings.showNames) {
                     drawText(ctx, 0, this.x, this.y, this.nameSize, this.drawNameSize, this.name);
@@ -1051,10 +1051,7 @@
         ctx.textBaseline = "middle";
         ctx.textAlign = "center";
         var string = String($("#nameColor").val());
-        var color = "FFF";
-        if (text === 'Ɦﻉɭɭƈคፕ (ʞ)') color = "F00";
-        else if (text === 'Miwol') color = "F0F";
-        ctx.fillStyle = "#" + (!string ? (color) : string);
+        ctx.fillStyle = "#" + (!string ? "#FFF" : string);
         ctx.strokeStyle = "#000";
         ctx.translate(canvas.width / 2, 2 * size);
         (ctx.lineWidth !== 1) && ctx.strokeText(text, 0, 0);
