@@ -142,46 +142,46 @@
         }
     };
     var log = {
-        verbosity: 4,
-        error: function(a) {if (log.verbosity <= 0) return; console.error(a)},
-        warn: function(a) {if (log.verbosity <= 1) return; console.warn(a)},
-        info: function(a) {if (log.verbosity <= 2) return; console.info(a)},
-        debug: function(a) {if (log.verbosity <= 3) return; console.debug(a)}
-    };
-    var WS_URL = null;
-    var SKIN_URL = "../../skins/";
-    var USE_HTTPS = "https:" == wHandle.location.protocol;
-    var UINT8_254 = new Uint8Array([254, 6, 0, 0, 0]);
-    var UINT8_255 = new Uint8Array([255, 1, 0, 0, 0]);
-    var UINT8 = {
-        1: new Uint8Array([1]),
-        17: new Uint8Array([17]),
-        21: new Uint8Array([21]),
-        18: new Uint8Array([18]),
-        19: new Uint8Array([19]),
-        22: new Uint8Array([22]),
-        23: new Uint8Array([23]),
-        24: new Uint8Array([24]),
-        25: new Uint8Array([25]),
-        26: new Uint8Array([26]),
-        27: new Uint8Array([27]),
-        28: new Uint8Array([28]),
-        30: new Uint8Array([30]),
-        31: new Uint8Array([31]),
-        29: new Uint8Array([29]),
-        33: new Uint8Array([33]),
-        34: new Uint8Array([34]),
-        35: new Uint8Array([35]),
-        36: new Uint8Array([36]),
-        37: new Uint8Array([37]),
-        38: new Uint8Array([38]),
-        39: new Uint8Array([39]),
-        40: new Uint8Array([40]),
-        41: new Uint8Array([41]),
-        42: new Uint8Array([42]),
-        43: new Uint8Array([43]),
-        254: new Uint8Array([254])
-    };
+            verbosity: 4,
+            error: function(a) {if (log.verbosity <= 0) return; console.error(a)},
+            warn: function(a) {if (log.verbosity <= 1) return; console.warn(a)},
+            info: function(a) {if (log.verbosity <= 2) return; console.info(a)},
+            debug: function(a) {if (log.verbosity <= 3) return; console.debug(a)}
+        },
+        WS_URL = null,
+        SKIN_URL = "../../skins/",
+        USE_HTTPS = "https:" == wHandle.location.protocol,
+        UINT8_254 = new Uint8Array([254, 6, 0, 0, 0]),
+        UINT8_255 = new Uint8Array([255, 1, 0, 0, 0]),
+        UINT8 = {
+            1: new Uint8Array([1]),
+            17: new Uint8Array([17]),
+            21: new Uint8Array([21]),
+            18: new Uint8Array([18]),
+            19: new Uint8Array([19]),
+            22: new Uint8Array([22]),
+            23: new Uint8Array([23]),
+            24: new Uint8Array([24]),
+            25: new Uint8Array([25]),
+            26: new Uint8Array([26]),
+            27: new Uint8Array([27]),
+            28: new Uint8Array([28]),
+            30: new Uint8Array([30]),
+            31: new Uint8Array([31]),
+            29: new Uint8Array([29]),
+            33: new Uint8Array([33]),
+            34: new Uint8Array([34]),
+            35: new Uint8Array([35]),
+            36: new Uint8Array([36]),
+            37: new Uint8Array([37]),
+            38: new Uint8Array([38]),
+            39: new Uint8Array([39]),
+            40: new Uint8Array([40]),
+            41: new Uint8Array([41]),
+            42: new Uint8Array([42]),
+            43: new Uint8Array([43]),
+            254: new Uint8Array([254])
+        };
     function wsCleanup() {
         if (!ws) return;
         log.debug("WS cleanup triggered!");
@@ -209,11 +209,11 @@
         wsSend(UINT8_254);
         wsSend(UINT8_255);
         log.debug(`WS connected, using https: ${USE_HTTPS}`);
-        console.log("Socket open");
+        console.log("Socket open.");
     }
     function wsError(error) {
         log.warn(error);
-        /*throw new Error*/console.log("Socket error");
+        /*throw new Error*/console.log("Socket error.");
     }
     function wsClose(e) {
         isConnected = 0;
@@ -234,13 +234,26 @@
     }
     function wsMessage(data) {
         syncUpdStamp = Date.now();
-        var reader = new Reader(new DataView(data.data), 0, 1);
-        var packetId = reader.getUint8();
+        var reader = new Reader(new DataView(data.data), 0, 1),
+            packetId = reader.getUint8();
         switch (packetId) {
-            case 0x10: // update nodes
-                var killer, killed, id, x, y, s, flags, cell,
-                    updColor, updName, updSkin, count, color, name, skin;
-                // consume records
+            case 0x10: // Update nodes
+                var killer,
+                    killed,
+                    id,
+                    x,
+                    y,
+                    s,
+                    flags,
+                    cell,
+                    updColor,
+                    updName,
+                    updSkin,
+                    count,
+                    color,
+                    name,
+                    skin;
+                // Consume records
                 count = reader.getUint16();
                 for (var i = 0; i < count; i++) {
                     killer = reader.getUint32();
@@ -248,7 +261,7 @@
                     if (!cells.byId.hasOwnProperty(killer) || !cells.byId.hasOwnProperty(killed)) continue;
                     cells.byId[killed].destroy(killer);
                 }
-                // update records
+                // Update records
                 while (1) {
                     id = reader.getUint32();
                     if (id === 0) break;
@@ -281,57 +294,55 @@
                         cells.list.push(cell);
                     }
                 }
-                // dissapear records
+                // Disappear records
                 count = reader.getUint16();
                 for (i = 0; i < count; i++) {
                     killed = reader.getUint32();
-                    if (cells.byId.hasOwnProperty(killed) && !cells.byId[killed].destroyed)
-                        cells.byId[killed].destroy(null);
+                    if (cells.byId.hasOwnProperty(killed) && !cells.byId[killed].destroyed) cells.byId[killed].destroy(null);
                 }
                 break;
-            case 0x11: // update pos
+            case 0x11: // Update position
                 targetX = reader.getFloat32();
                 targetY = reader.getFloat32();
                 targetZ = reader.getFloat32();
                 break;
-            case 0x12: // clear all
+            case 0x12: // Clear all
                 for (var i in cells.byId) cells.byId[i].destroy(null);
-            case 0x14: // clear my cells
+            case 0x14: // Clear my cells
                 cells.mine = [];
                 break;
-            case 0x15: // draw line
+            case 0x15: // Draw line
                 log.warn("Got packet 0x15 (draw line) which is unsupported!");
                 break;
-            case 0x20: // new cell
+            case 0x20: // New cell
                 cells.mine.push(reader.getUint32());
                 break;
-            case 0x30: // text list
+            case 0x30: // Draw just text on a leaderboard
                 leaderboard.items = [];
                 leaderboard.type = "text";
                 count = reader.getUint32();
                 for (i = 0; i < count; ++i) leaderboard.items.push(reader.getStringUTF8());
                 drawLeaderboard();
                 break;
-            case 0x31: // ffa list
+            case 0x31: // Draw FFA leaderboard
                 leaderboard.items = [];
                 leaderboard.type = "ffa";
                 count = reader.getUint32();
-                for (i = 0; i < count; ++i) {
+                for (i = 0; i < count; ++i)
                     leaderboard.items.push({
                         me: !!reader.getUint32(),
                         name: reader.getStringUTF8() || "An unnamed cell"
                     });
-                }
                 drawLeaderboard();
                 break;
-            case 0x32: // pie chart for teams
+            case 0x32: // Draw Teams leaderboard
                 leaderboard.items = [];
                 leaderboard.type = "pie";
                 count = reader.getUint32();
                 for (i = 0; i < count; ++i) leaderboard.items.push(reader.getFloat32());
                 drawLeaderboard();
                 break;
-            case 0x40: // set border
+            case 0x40: // Set the borders
                 border.left = reader.getFloat64();
                 border.top = reader.getFloat64();
                 border.right = reader.getFloat64();
@@ -360,10 +371,10 @@
                 name = reader.getStringUTF8().trim();
                 var reg = /\{([\w]+)\}/.exec(name);
                 if (reg) name = name.replace(reg[0], "").trim();
-                var message = reader.getStringUTF8();
-                var server = !!(flags & 0x80);
-                var admin = !!(flags & 0x40);
-                var mod = !!(flags & 0x20);
+                var message = reader.getStringUTF8(),
+                    server = !!(flags & 0x80),
+                    admin = !!(flags & 0x40),
+                    mod = !!(flags & 0x20);
                 if (server && name !== "SERVER") name = "[SERVER] " + name;
                 if (admin) name = "[ADMIN] " + name;
                 if (mod) name = "[MOD] " + name;
@@ -428,45 +439,45 @@
         mapCenterSet = 0;
     }
     var cells = Object.create({
-        mine: [],
-        byId: {},
-        list: [],
-    });
-    var border = Object.create({
-        left: -2000,
-        right: 2000,
-        top: -2000,
-        bottom: 2000,
-        width: 4000,
-        height: 4000,
-        centerX: -1,
-        centerY: -1
-    });
-    var leaderboard = Object.create({
-        type: NaN,
-        items: null,
-        canvas: document.createElement("canvas"),
-        teams: ["#F33", "#3F3", "#33F"]
-    });
-    var chat = Object.create({
-        messages: [],
-        waitUntil: 0,
-        canvas: document.createElement("canvas"),
-        visible: 0,
-    });
-    var stats = Object.create({
-        framesPerSecond: 0,
-        latency: NaN,
-        supports: null,
-        info: null,
-        pingLoopId: NaN,
-        pingLoopStamp: null,
-        canvas: document.createElement("canvas"),
-        visible: 0,
-        score: NaN,
-        maxScore: 0
-    });
-    var ws = null,
+            mine: [],
+            byId: {},
+            list: [],
+        }),
+        border = Object.create({
+            left: -2000,
+            right: 2000,
+            top: -2000,
+            bottom: 2000,
+            width: 4000,
+            height: 4000,
+            centerX: -1,
+            centerY: -1
+        }),
+        leaderboard = Object.create({
+            type: NaN,
+            items: null,
+            canvas: document.createElement("canvas"),
+            teams: ["#F33", "#3F3", "#33F"]
+        }),
+        chat = Object.create({
+            messages: [],
+            waitUntil: 0,
+            canvas: document.createElement("canvas"),
+            visible: 0,
+        }),
+        stats = Object.create({
+            framesPerSecond: 0,
+            latency: NaN,
+            supports: null,
+            info: null,
+            pingLoopId: NaN,
+            pingLoopStamp: null,
+            canvas: document.createElement("canvas"),
+            visible: 0,
+            score: NaN,
+            maxScore: 0
+        }),
+        ws = null,
         WS_URL = null,
         isConnected = 0,
         disconnectDelay = 1000,
@@ -490,71 +501,70 @@
         viewMult = 1,
         mouseX = NaN,
         mouseY = NaN,
-        mouseZ = 1;
-    var settings = {
-        mobile: "createTouch" in document,
-        showMass: 1,
-        showNames: 1,
-        hideChat: 0,
-        showTextOutline: 1,
-        showColor: 1,
-        showSkins: 1,
-        showMinimap: 1,
-        darkTheme: 1,
-        hideGrid: 0,
-        cellBorders: 1,
-        infiniteZoom: 0,
-        transparency: 0,
-        mapBorders: 1,
-        sectors: 1,
-        showPos: 1,
-        hideFood: 0,
-        allowGETipSet: 0
-    };
-    var pressed = {
-        space: 0,
-        w: 0,
-        e: 0,
-        r: 0,
-        t: 0,
-        p: 0,
-        q: 0,
-        o: 0,
-        m: 0,
-        i: 0,
-        y: 0,
-        u: 0,
-        k: 0,
-        l: 0,
-        h: 0,
-        z: 0,
-        x: 0,
-        s: 0,
-        c: 0,
-        g: 0,
-        j: 0,
-        b: 0,
-        v: 0,
-        n: 0,
-        esc: 0
-    };
-    if (null !== wHandle.localStorage) {
+        mouseZ = 1,
+        settings = {
+            mobile: "createTouch" in document,
+            showMass: 0,
+            showNames: 1,
+            hideChat: 0,
+            showTextOutline: 1,
+            showColor: 1,
+            showSkins: 1,
+            showMinimap: 1,
+            darkTheme: 0,
+            hideGrid: 0,
+            cellBorders: 1,
+            infiniteZoom: 0,
+            transparency: 0,
+            mapBorders: 0,
+            sectors: 0,
+            showPos: 0,
+            hideFood: 0,
+            allowGETipSet: 0
+        },
+        pressed = {
+            space: 0,
+            w: 0,
+            e: 0,
+            r: 0,
+            t: 0,
+            p: 0,
+            q: 0,
+            o: 0,
+            m: 0,
+            i: 0,
+            y: 0,
+            u: 0,
+            k: 0,
+            l: 0,
+            h: 0,
+            z: 0,
+            x: 0,
+            s: 0,
+            c: 0,
+            g: 0,
+            j: 0,
+            b: 0,
+            v: 0,
+            n: 0,
+            esc: 0
+        };
+    if (null !== wHandle.localStorage)
         wjQuery(window).load(function() {
             wjQuery(".save").each(function() {
-                var id = wjQuery(this).data("box-id");
-                var value = wHandle.localStorage.getItem("checkbox-" + id);
+                var id = wjQuery(this).data("box-id"),
+                    value = wHandle.localStorage.getItem("checkbox-" + id);
                 if (value && value == "1" && 0 != id) {
                     wjQuery(this).prop("checked", "1");
                     wjQuery(this).trigger("change");
                 } else if (id == 0 && value != null) wjQuery(this).val(value);
             });
             wjQuery(".save").change(function() {
-                var id = wjQuery(this).data("box-id");
-                var value = (id == 0) ? wjQuery(this).val() : wjQuery(this).prop("checked");
+                var id = wjQuery(this).data("box-id"),
+                    value = (id == 0) ? wjQuery(this).val() : wjQuery(this).prop("checked");
                 wHandle.localStorage.setItem("checkbox-" + id, value);
             });
         });
-    }
     function hideOverlay() {
         overlayShown = 0;
         wjQuery("#overlays").fadeOut(200);
@@ -568,8 +578,12 @@
         scaleForth(ctx);
         ctx.translate(-cameraX, -cameraY);
     }
-    function scaleForth(ctx) {ctx.scale(cameraZ, cameraZ)}
-    function scaleBack(ctx) {ctx.scale(cameraZInvd, cameraZInvd)}
+    function scaleForth(ctx) {
+        ctx.scale(cameraZ, cameraZ);
+    }
+    function scaleBack(ctx) {
+        ctx.scale(cameraZInvd, cameraZInvd);
+    }
     function fromCamera(ctx) {
         ctx.translate(cameraX, cameraY);
         scaleBack(ctx);
@@ -577,10 +591,10 @@
     }
     function drawChat() {
         if (chat.messages.length === 0 && !settings.hideChat) return;
-        var canvas = chat.canvas;
-        var ctx = canvas.getContext("2d");
-        var latestMessages = chat.messages.slice(-15);
-        var lines = [];
+        var canvas = chat.canvas,
+            ctx = canvas.getContext("2d"),
+            latestMessages = chat.messages.slice(-15),
+            lines = [];
         for (var i = 0, len = latestMessages.length; i < len; i++) {
             lines.push([
                 {text: latestMessages[i].name,
@@ -589,11 +603,11 @@
                 color: settings.darkTheme ? "#FFF" : "#000"}
             ]);
         }
-        var width = 0;
-        var height = 20 * len + 2;
+        var width = 0,
+            height = 20 * len + 2;
         for (var i = 0; i < len; i++) {
-            var thisLineWidth = 0;
-            var complexes = lines[i];
+            var thisLineWidth = 0,
+                complexes = lines[i];
             for (var j = 0; j < complexes.length; j++) {
                 ctx.font = "18px Ubuntu";
                 complexes[j].width = ctx.measureText(complexes[j].text).width;
@@ -617,8 +631,8 @@
     function drawStats() {
         if (!stats.info) return stats.visible = 0;
         stats.visible = 1;
-        var canvas = stats.canvas;
-        var ctx = canvas.getContext("2d");
+        var canvas = stats.canvas,
+            ctx = canvas.getContext("2d");
         ctx.font = "14px Ubuntu";
         var rows = [
             `${stats.info.name} (${stats.info.mode})`,
@@ -1305,34 +1319,82 @@
         };
         wHandle.onkeyup = function(event) {
             switch (event.keyCode) {
-                case 32: pressed.space = 0; break; // Space
-                case 87: pressed.w = 0; break; // W
+                case 32: // Space
+                    pressed.space = 0;
+                    break;
+                case 87: // W
+                    pressed.w = 0;
+                    break;
                 case 81: // Q
                     if (pressed.q) wsSend(UINT8[19]);
                     pressed.q = 0;
                     break;
-                case 69: pressed.e = 0; break; // E
-                case 82: pressed.r = 0; break; // R
-                case 84: pressed.t = 0; break; // T
-                case 80: pressed.p = 0; break; // P
-                case 79: pressed.o = 0; break; // O
-                case 77: pressed.m = 0; break; // M
-                case 73: pressed.i = 0; break; // I
-                case 89: pressed.y = 0; break; // Y
-                case 85: pressed.u = 0; break; // U
-                case 75: pressed.k = 0; break; // K
-                case 76: pressed.l = 0; break; // L
-                case 72: pressed.h = 0; break; // H
-                case 90: pressed.z = 0; break; // Z
-                case 88: pressed.x = 0; break; // X
-                case 83: pressed.s = 0; break; // S
-                case 67: pressed.c = 0; break; // C
-                case 74: pressed.g = 0; break; // G
-                case 71: pressed.j = 0; break; // J
-                case 66: pressed.b = 0; break; // B
-                case 86: pressed.v = 0; break; // V
-                case 78: pressed.n = 0; break; // N
-                case 27: pressed.esc = 0; break; // Esc
+                case 69: // E
+                    pressed.e = 0;
+                    break;
+                case 82: // R
+                    pressed.r = 0;
+                    break;
+                case 84: // T
+                    pressed.t = 0;
+                    break;
+                case 80: // P
+                    pressed.p = 0;
+                    break;
+                case 79: // O
+                    pressed.o = 0;
+                    break;
+                case 77: // M
+                    pressed.m = 0;
+                    break;
+                case 73: // I
+                    pressed.i = 0;
+                    break;
+                case 89: // Y
+                    pressed.y = 0;
+                    break;
+                case 85: // U
+                    pressed.u = 0;
+                    break;
+                case 75: // K
+                    pressed.k = 0;
+                    break;
+                case 76: // L
+                    pressed.l = 0;
+                    break;
+                case 72: // H
+                    pressed.h = 0;
+                    break;
+                case 90: // Z
+                    pressed.z = 0;
+                    break;
+                case 88: // X
+                    pressed.x = 0;
+                    break;
+                case 83: // S
+                    pressed.s = 0;
+                    break;
+                case 67: // C
+                    pressed.c = 0;
+                    break;
+                case 74: // G
+                    pressed.g = 0;
+                    break;
+                case 71: // J
+                    pressed.j = 0;
+                    break;
+                case 66: // B
+                    pressed.b = 0;
+                    break;
+                case 86: // V
+                    pressed.v = 0;
+                    break;
+                case 78: // N
+                    pressed.n = 0;
+                    break;
+                case 27: // Esc
+                    pressed.esc = 0;
+                    break;
             }
         };
         chatBox.onblur = function() {
