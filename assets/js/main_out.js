@@ -1,7 +1,7 @@
-(function(wHandle, wjQuery) { /*global navigator, Image, $*/
-    if (navigator.appVersion.indexOf("MSIE") != -1) alert(
-        "You're using a pretty old browser, some parts of the site may not work properly!"
-    );
+/*global navigator, Image, $*/
+//'use strict';
+(function(wHandle, wjQuery) {
+    if (navigator.appVersion.indexOf("MSIE") != -1) alert("You're using a pretty old browser, some parts of the site may not work properly!");
     Date.now || (Date.now = function() {
         return (+new Date()).getTime();
     });
@@ -493,21 +493,21 @@
         mouseZ = 1;
     var settings = {
         mobile: "createTouch" in document,
-        showMass: 0,
+        showMass: 1,
         showNames: 1,
         hideChat: 0,
         showTextOutline: 1,
         showColor: 1,
         showSkins: 1,
         showMinimap: 1,
-        darkTheme: 0,
+        darkTheme: 1,
         hideGrid: 0,
         cellBorders: 1,
         infiniteZoom: 0,
         transparency: 0,
-        mapBorders: 0,
-        sectors: 0,
-        showPos: 0,
+        mapBorders: 1,
+        sectors: 1,
+        showPos: 1,
         hideFood: 0,
         allowGETipSet: 0
     };
@@ -651,9 +651,9 @@
         if (leaderboard.type === NaN) return leaderboard.visible = 0;
         if (!settings.showNames || leaderboard.items.length === 0) return leaderboard.visible = 0;
         leaderboard.visible = 1;
-        var canvas = leaderboard.canvas;
-        var ctx = canvas.getContext("2d");
-        var len = leaderboard.items.length;
+        var canvas = leaderboard.canvas,
+            ctx = canvas.getContext("2d"),
+            len = leaderboard.items.length;
         canvas.width = 250;
         canvas.height = leaderboard.type !== "pie" ? 60 + 24 * len : 240;
         ctx.globalAlpha = .4;
@@ -714,13 +714,13 @@
         mainCtx.stroke();
         mainCtx.restore();
     }
-    function drawBorders() {
-        if (!isConnected || border.centerX !== 0 ||
-            border.centerY !== 0 || !settings.mapBorders) return;
+    function drawBorders() { // Rendered unusable when a server has coordinate scrambling enabled.
+        if (!isConnected || border.centerX !== 0 || border.centerY !== 0 || !settings.mapBorders) return;
+        mainCtx.save();
         mainCtx.strokeStyle = '#F00';
         mainCtx.lineWidth = 20;
-        //mainCtx.lineCap = "round";
-        //mainCtx.lineJoin = "round";
+        mainCtx.lineCap = "round";
+        mainCtx.lineJoin = "round";
         mainCtx.beginPath();
         mainCtx.moveTo(border.left, border.top);
         mainCtx.lineTo(border.right, border.top);
@@ -728,16 +728,15 @@
         mainCtx.lineTo(border.left, border.bottom);
         mainCtx.closePath();
         mainCtx.stroke();
+        mainCtx.restore();
     }
-    function drawSectors() {
-        if (!isConnected || border.centerX !== 0 ||
-            border.centerY !== 0 || !settings.sectors) return;
-        //mainCtx.strokeRect(border.left, border.top, 500, 500);
-        var x = border.left + 65;
-        var y = border.bottom - 65;
-        var letter = "ABCDE".split("");
-        var w = (border.right - 65 - x) / 5;
-        var h = (border.top + 65 - y) / 5;
+    function drawSectors() { // Rendered unusable when a server has coordinate scrambling enabled.
+        if (!isConnected || border.centerX !== 0 || border.centerY !== 0 || !settings.sectors) return;
+        var x = border.left + 65,
+            y = border.bottom - 65,
+            letter = "ABCDE".split(""),
+            w = (border.right - 65 - x) / 5,
+            h = (border.top + 65 - y) / 5;
         mainCtx.save();
         mainCtx.beginPath();
         mainCtx.lineWidth = .05;
@@ -755,7 +754,7 @@
         mainCtx.stroke();
     }
     function drawMinimap() {
-        // Rendered unusable when the scrambling level is 2 or more, or when there is a non-zero map center.
+        // Rendered unusable when a server has coordinate scrambling enabled.
         if (!isConnected || border.centerX !== 0 ||
             border.centerY !== 0 || !settings.showMinimap) return;
         mainCtx.save();
@@ -805,7 +804,7 @@
             mainCtx.arc(posX, posY, 5, 0, Math.PI * 2);
         }
         mainCtx.fill();
-        // Draw name above user's pos if he has a cell on the screen
+        // Draw name above user's position if he has a cell on the screen
         cell = null;
         for (var i = 0, l = cells.mine.length; i < l; i++) {
             if (cells.byId.hasOwnProperty(cells.mine[i])) {
@@ -847,7 +846,7 @@
             height += 30;
         } else {
             mainCtx.font = "30px Ubuntu";
-            if (!settings.showPos || !isConnected) var pos = "";
+            if (!settings.showPos || !isConnected) pos = "";
             else {
                 pos = `Position: (${~~cameraX}, ${~~cameraY})`;
                 mainCtx.fillText(`${pos}`, 2, height);
@@ -979,10 +978,10 @@
             if (settings.hideFood && this.food) return;
             ctx.fillStyle = settings.showColor ? this.color : Cell.prototype.color;
             var color = String($("#cellBorderColor").val());
-            ctx.strokeStyle = (color === '000000' || color === '000' || !color) ?
+            ctx.strokeStyle = color === '000000' || color === '000' || !color ?
                 (settings.showColor ? this.sColor : Cell.prototype.sColor) : "#" + color;
             var size = String($("#cellBorderSize").val());
-            ctx.lineWidth = (this.jagged) ? 12 : ((!size || size > 50) ? Math.max(~~(this.s / 50), 10) : size);
+            ctx.lineWidth = this.jagged ? 12 : (!size || size > 50 ? Math.max(~~(this.s / 50), 10) : size);
             var showCellBorder = settings.cellBorders && !this.food && !this.ejected && 20 < this.s;
             if (showCellBorder) this.s -= ctx.lineWidth / 2 - 2;
             ctx.beginPath();
@@ -1308,7 +1307,10 @@
             switch (event.keyCode) {
                 case 32: pressed.space = 0; break; // Space
                 case 87: pressed.w = 0; break; // W
-                case 81: if (pressed.q) wsSend(UINT8[19]); pressed.q = 0; break; // Q
+                case 81: // Q
+                    if (pressed.q) wsSend(UINT8[19]);
+                    pressed.q = 0;
+                    break;
                 case 69: pressed.e = 0; break; // E
                 case 82: pressed.r = 0; break; // R
                 case 84: pressed.t = 0; break; // T
