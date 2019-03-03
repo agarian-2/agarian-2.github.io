@@ -1,6 +1,5 @@
 /*global navigator, Image, $*/
 //'use strict';
-var minionsFrozen = false;
 (function(wHandle, wjQuery) {
     if (navigator.appVersion.indexOf("MSIE") != -1) alert("You're using a pretty old browser, some parts of the site may not work properly!");
     Date.now || (Date.now = function() {
@@ -644,7 +643,6 @@ var minionsFrozen = false;
             `${stats.info.playersDead} dead`,
             `${stats.info.playersSpect} spectating`,
             `${stats.info.botsTotal} bots`,
-            'Minions Frozen: ' + minionsFrozen,
             `${(stats.info.update * 2.5).toFixed(1)}% memory load`,
             `${prettyPrintTime(stats.info.uptime)} uptime`
         ];
@@ -1225,7 +1223,6 @@ var minionsFrozen = false;
                     if (isTyping || overlayShown || pressed.t) break;
                     wsSend(UINT8[24]);
                     pressed.t = 1;
-                    minionsFrozen = !minionsFrozen;
                     break;
                 case 80: // P
                     if (isTyping || overlayShown || pressed.p) break;
