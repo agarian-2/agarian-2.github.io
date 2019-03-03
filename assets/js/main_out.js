@@ -640,6 +640,7 @@
             `${stats.info.playersAlive} playing`,
             `${stats.info.playersDead} dead`,
             `${stats.info.playersSpect} spectating`,
+            `${stats.info.botsTotal} bots`,
             `${(stats.info.update * 2.5).toFixed(1)}% memory load`,
             `${prettyPrintTime(stats.info.uptime)} uptime`
         ];
