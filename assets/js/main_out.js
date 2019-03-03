@@ -638,6 +638,7 @@
             `${stats.info.name} (${stats.info.mode})`,
             `${stats.info.playersTotal} / ${stats.info.playersLimit} players`,
             `${stats.info.playersAlive} playing`,
+            `${stats.info.playersDead} dead`,
             `${stats.info.playersSpect} spectating`,
             `${(stats.info.update * 2.5).toFixed(1)}% memory load`,
             `${prettyPrintTime(stats.info.uptime)} uptime`
