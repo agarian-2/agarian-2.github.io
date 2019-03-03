@@ -634,6 +634,8 @@
         var canvas = stats.canvas,
             ctx = canvas.getContext("2d");
         ctx.font = "14px Ubuntu";
+        if (typeof stats.info.botsTotal === 'undefined') stats.info.botsTotal = 0;
+        if (typeof stats.info.playersDead === 'undefined') stats.info.playersDead = 0;
         var rows = [
             `${stats.info.name} (${stats.info.mode})`,
             `${stats.info.playersTotal} / ${stats.info.playersLimit} players`,
