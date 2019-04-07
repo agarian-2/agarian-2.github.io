@@ -20,16 +20,17 @@
     <script src="assets/js/jquery-1.11.3.min.js"></script>
     <script src="assets/js/main_out.js"></script>
     <script>
-        // Macro for shift split
-        /*global $*/
-        function keydown(event) {
-            if (event.keyCode == 16) for (var i = 0; i < 5; i++) setTimeout(split, 50 * i);
-            if (event.keyCode == 65) for (var j = 0; j < 3; j++) setTimeout(split, 50 * j);
-            if (event.keyCode == 68) {
+        // Macro W, shift, doublesplit
+        function keydown(e) {
+            if (e.keyCode === 16)
+                for (var i = 0; i < 5; i++) setTimeout(split, 50 * i);
+            if (e.keyCode === 65)
+                for (var j = 0; j < 3; j++) setTimeout(split, 50 * j);
+            if (e.keyCode === 68) {
                 split();
                 setTimeout(split, 50);
             }
-        }
+        } /*global $*/
         function split() {
             $("body").trigger($.Event("keydown", {
                 keyCode: 32
