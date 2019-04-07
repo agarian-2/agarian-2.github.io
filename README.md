@@ -1,8 +1,8 @@
 # Agarian-2.github.io
-An experimental client for my agar.io server.
+An experimental client for my MultiOgar server.
 
 Things to note:
- - This client can be used for any agar.io server (assuming it's MultiOgar based).
+ - This client can be used for most MultiOgar-based servers.
  - Skins are broken at the moment.
  - I usually don't check this enough to be in a position to help issues and/or answer questions.
  - This client is NOT owned by me (the original is located at https://github.com/Luka967/Cigar).
