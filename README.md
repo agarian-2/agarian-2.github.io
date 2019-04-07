@@ -4,9 +4,10 @@ An experimental client for my agar.io server.
 Things to note:
  - This client can be used for any agar.io server (assuming it's MultiOgar based).
  - Skins are broken at the moment.
- - I am not in a position to help anybody who has an issue with my client, unless I find it necessary.
+ - I usually don't check this enough to be in a position to help issues and/or answer questions.
  - This client is NOT owned by me (the original is located at https://github.com/Luka967/Cigar).
- - Updates will usually come often.
+ - Updates sometimes happen, but don't count on it.
+ - This client works best with my MultiOgar server, located at https://github.com/agarian-2/MultiOgar.
 
 What's new (mostly options):
  - Option to hide cell borders.
@@ -27,3 +28,4 @@ What's new (mostly options):
  - Some small optimizations here-and-there.
  - My Discord name will now be red...
  - Adjusted leaderboard (looks much more like agar.io's leaderboard).
+ - New stats such as bot amount, dead players, etc.
