@@ -699,8 +699,8 @@
                 if (leaderboard.type === "text") text = leaderboard.items[i];
                 else text = leaderboard.items[i].name, isMe = leaderboard.items[i].me;
                 // replace {skin} with empty string
-                /*var reg = /\{([\w]+)\}/.exec(text);
-                if (reg) text = text.replace(reg[0], "").trim();*/
+                var reg = /\{([\w]+)\}/.exec(text);
+                if (reg) text = text.replace(reg[0], "").trim();
                 var string = String($("#lbColor").val());
                 ctx.fillStyle = isMe ? "#" + (!string ? "FAA" : string) : "#FFF";
                 if (leaderboard.type === "ffa") text = (i + 1) + ". " + (text || "An unnamed cell");
@@ -982,12 +982,11 @@
             this.drawNameSize = ~~(~~(Math.max(~~(.3 * this.s), 24)) / 3) * 3;
         },
         setName: function(value) {
-            /*var nameSkin = /\{([\w\W]+)\}/.exec(value);
+            var nameSkin = /\{([\w\W]+)\}/.exec(value);
             if (this.skin === null && nameSkin !== null) {
                 this.name = value.replace(nameSkin[0], "").trim();
                 this.setSkin(nameSkin[1]);
-            } else */
-            this.name = value;
+            } else this.name = value;
         },
         setSkin: function(value) {
             this.skin = (value && value[0] === "%" ? value.slice(1) : value) || this.skin;
