@@ -692,14 +692,15 @@
                 ctx.fill();
             }
         } else {
-            var text, isMe = 0;
+            var text,
+                isMe = 0;
             ctx.font = "20px Ubuntu";
             for (var i = 0; i < len; i++) {
                 if (leaderboard.type === "text") text = leaderboard.items[i];
                 else text = leaderboard.items[i].name, isMe = leaderboard.items[i].me;
                 // replace {skin} with empty string
-                var reg = /\{([\w]+)\}/.exec(text);
-                if (reg) text = text.replace(reg[0], "").trim();
+                /*var reg = /\{([\w]+)\}/.exec(text);
+                if (reg) text = text.replace(reg[0], "").trim();*/
                 var string = String($("#lbColor").val());
                 ctx.fillStyle = isMe ? "#" + (!string ? "FAA" : string) : "#FFF";
                 if (leaderboard.type === "ffa") text = (i + 1) + ". " + (text || "An unnamed cell");
@@ -939,14 +940,26 @@
     }
     Cell.prototype = {
         destroyed: 0,
-        id: 0, diedBy: 0,
-        ox: 0, x: 0, nx: 0,
-        oy: 0, y: 0, ny: 0,
-        os: 0, s: 0, ns: 0,
-        nameSize: 0, drawNameSize: 0,
-        color: "#FFF", sColor: "#E5E5E5",
-        skin: null, jagged: 0,
-        born: null, updated: null, dead: null, // timestamps
+        id: 0,
+        diedBy: 0,
+        ox: 0,
+        x: 0,
+        nx: 0,
+        oy: 0,
+        y: 0,
+        ny: 0,
+        os: 0,
+        s: 0,
+        ns: 0,
+        nameSize: 0,
+        drawNameSize: 0,
+        color: "#FFF",
+        sColor: "#E5E5E5",
+        skin: null,
+        jagged: 0,
+        born: null,
+        updated: null,
+        dead: null, // timestamps
         destroy: function(killerId) {
             delete cells.byId[this.id];
             if (cells.mine.remove(this.id) && cells.mine.length === 0) showOverlay();
@@ -969,11 +982,12 @@
             this.drawNameSize = ~~(~~(Math.max(~~(.3 * this.s), 24)) / 3) * 3;
         },
         setName: function(value) {
-            var nameSkin = /\{([\w\W]+)\}/.exec(value);
+            /*var nameSkin = /\{([\w\W]+)\}/.exec(value);
             if (this.skin === null && nameSkin !== null) {
                 this.name = value.replace(nameSkin[0], "").trim();
                 this.setSkin(nameSkin[1]);
-            } else this.name = value;
+            } else */
+            this.name = value;
         },
         setSkin: function(value) {
             this.skin = (value && value[0] === "%" ? value.slice(1) : value) || this.skin;
@@ -982,7 +996,7 @@
             loadedSkins[this.skin].src = `${SKIN_URL}${this.skin}.png`;
         },
         setColor: function(value) {
-            if (!value) {return log.warn("Returned no color!")}
+            if (!value) return log.warn("Returned no color!");
             this.color = value;
             this.sColor = darkenColor(value);
         },
@@ -996,8 +1010,7 @@
             if (settings.hideFood && this.food) return;
             ctx.fillStyle = settings.showColor ? this.color : Cell.prototype.color;
             var color = String($("#cellBorderColor").val());
-            ctx.strokeStyle = color === '000000' || color === '000' || !color ?
-                (settings.showColor ? this.sColor : Cell.prototype.sColor) : "#" + color;
+            ctx.strokeStyle = color === '000000' || color === '000' || !color ? (settings.showColor ? this.sColor : Cell.prototype.sColor) : "#" + color;
             var size = String($("#cellBorderSize").val());
             ctx.lineWidth = this.jagged ? 12 : (!size || size > 50 ? Math.max(~~(this.s / 50), 10) : size);
             var showCellBorder = settings.cellBorders && !this.food && !this.ejected && 20 < this.s;
