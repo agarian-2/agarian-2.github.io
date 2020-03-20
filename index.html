@@ -54,7 +54,7 @@
                     <select id="gamemode" class="form-control" onchange="setServer($(this).val());" required>
                         <option selected disabled>Servers:</option>
                         <option value="127.0.0.1:443">Local 443</option>
-                        <option value="4fe1e7f3e3ed40d590cbbeadd7767855.vfs.cloud9.us-east-2.amazonaws.com">My MultiOgar</option>
+                        <option value="woomy-arras.io:4005">My MultiOgar</option>
                     </select>
                     <br clear="both" />
                 </div>
@@ -92,16 +92,24 @@
                         <p> </p>
                         <table>
                             <tr>
-                                <td><label>LB Text Color (you)</label>
-                                    <input class="form-control" id="lbColor" placeholder="Default HEX = FAA" value="" style="width:180px;"></td>
-                                <td><label>Name Text Color</label>
-                                    <input class="form-control" id="nameColor" placeholder="Default HEX = FFF" value="" style="width:180px;"></td>
+                                <td>
+                                    <label>LB Text Color (you)</label>
+                                    <input class="form-control" id="lbColor" placeholder="Default HEX = FAA" value="" style="width:180px;">
+                                </td>
+                                <td>
+                                    <label>Name Text Color</label>
+                                    <input class="form-control" id="nameColor" placeholder="Default HEX = FFF" value="" style="width:180px;">
+                                </td>
                             </tr>
                             <tr>
-                                <td><label>Cell Border Color</label>
-                                    <input class="form-control" id="cellBorderColor" placeholder="Default HEX = 000" value="" style="width:180px;"></td>
-                                <td><label>Cell Border Size</label>
-                                    <input class="form-control" id="cellBorderSize" placeholder="Default = 0 | Max = 50" value="" type="number" min="1" max="50" style="width:180px;"></td>
+                                <td>
+                                    <label>Cell Border Color</label>
+                                    <input class="form-control" id="cellBorderColor" placeholder="Default HEX = 000" value="" style="width:180px;">
+                                </td>
+                                <td>
+                                    <label>Cell Border Size</label>
+                                    <input class="form-control" id="cellBorderSize" placeholder="Default = 0 | Max = 50" value="" type="number" min="1" max="50" style="width:180px;">
+                                </td>
                             </tr>
                         </table>
                     </div>
@@ -135,8 +143,8 @@
     </div>
     <div id="connecting">
         <div style="width: 350px; background-color: #FFFFFF; margin: 100px auto; border-radius: 15px; padding: 5px 15px 5px 15px;">
-            <h2>Connecting</h2>
-            <p> If you cannot connect to the server, check if you have some antivirus or firewall blocking the connection.</p>
+            <h2>Connecting...</h2>
+            <p> If you cannot connect to the server, check if you have an antivirus or firewall blocking the connection.</p>
         </div>
     </div>
     <canvas id="canvas" width="800" height="600"></canvas>
