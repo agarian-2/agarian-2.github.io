@@ -149,7 +149,7 @@
             debug: function(a) {if (log.verbosity <= 3) return; console.debug(a)}
         },
         WS_URL = null,
-        SKIN_URL = "../../skins/",
+        SKIN_URL = "./skins/",
         USE_HTTPS = "https:" == wHandle.location.protocol,
         UINT8_254 = new Uint8Array([254, 6, 0, 0, 0]),
         UINT8_255 = new Uint8Array([255, 1, 0, 0, 0]),
@@ -485,7 +485,6 @@
         syncAppStamp = Date.now(),
         mainCanvas = null,
         mainCtx = null,
-        knownSkins = {},
         loadedSkins = {},
         overlayShown = 0,
         isTyping = 0,
@@ -590,7 +589,7 @@
         ctx.translate(-mainCanvas.width / 2, -mainCanvas.height / 2);
     }
     function drawChat() {
-        if (chat.messages.length === 0 && !settings.hideChat) return;
+        if (!chat.messages.length && !settings.hideChat) return;
         var canvas = chat.canvas,
             ctx = canvas.getContext("2d"),
             latestMessages = chat.messages.slice(-15),
@@ -667,7 +666,7 @@
     }
     function drawLeaderboard() {
         if (leaderboard.type === NaN) return leaderboard.visible = 0;
-        if (!settings.showNames || leaderboard.items.length === 0) return leaderboard.visible = 0;
+        if (!settings.showNames || !leaderboard.items.length) return leaderboard.visible = 0;
         leaderboard.visible = 1;
         var canvas = leaderboard.canvas,
             ctx = canvas.getContext("2d"),
@@ -962,7 +961,7 @@
         dead: null, // timestamps
         destroy: function(killerId) {
             delete cells.byId[this.id];
-            if (cells.mine.remove(this.id) && cells.mine.length === 0) showOverlay();
+            if (cells.mine.remove(this.id) && !cells.mine.length) showOverlay();
             this.destroyed = 1;
             this.dead = syncUpdStamp;
             if (killerId && !this.diedBy) this.diedBy = killerId;
@@ -983,14 +982,14 @@
         },
         setName: function(value) {
             var nameSkin = /\{([\w\W]+)\}/.exec(value);
-            if (this.skin === null && nameSkin !== null) {
+            if (this.skin == null && nameSkin != null) {
                 this.name = value.replace(nameSkin[0], "").trim();
                 this.setSkin(nameSkin[1]);
             } else this.name = value;
         },
         setSkin: function(value) {
             this.skin = (value && value[0] === "%" ? value.slice(1) : value) || this.skin;
-            if (this.skin === null || !knownSkins.hasOwnProperty(this.skin) || loadedSkins[this.skin]) return;
+            if (this.skin == null || loadedSkins[this.skin]) return;
             loadedSkins[this.skin] = new Image();
             loadedSkins[this.skin].src = `${SKIN_URL}${this.skin}.png`;
         },
@@ -1009,7 +1008,7 @@
             if (settings.hideFood && this.food) return;
             ctx.fillStyle = settings.showColor ? this.color : Cell.prototype.color;
             var color = String($("#cellBorderColor").val());
-            ctx.strokeStyle = color === '000000' || color === '000' || !color ? (settings.showColor ? this.sColor : Cell.prototype.sColor) : "#" + color;
+            ctx.strokeStyle = color.length === 3 || color.length === 6 ? "#" + color : settings.showColor ? this.sColor : Cell.prototype.sColor;
             var size = String($("#cellBorderSize").val());
             ctx.lineWidth = this.jagged ? 12 : (!size || size > 50 ? Math.max(~~(this.s / 50), 10) : size);
             var showCellBorder = settings.cellBorders && !this.food && !this.ejected && 20 < this.s;
@@ -1048,7 +1047,7 @@
         },
         drawText: function(ctx) {
             if (this.s < 20 || this.jagged) return;
-            if (settings.showMass && (cells.mine.indexOf(this.id) !== -1 || cells.mine.length === 0) && !this.food/* && !this.ejected*/) {
+            if (settings.showMass && (cells.mine.indexOf(this.id) !== -1 || !cells.mine.length) && !this.food/* && !this.ejected*/) {
                 var mass = (~~(this.s * this.s / 100)).toString();
                 if (this.name && settings.showNames) {
                     drawText(ctx, 0, this.x, this.y, this.nameSize, this.drawNameSize, this.name);
