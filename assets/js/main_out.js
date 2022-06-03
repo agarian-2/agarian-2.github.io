@@ -46,7 +46,7 @@
     }
     Writer.prototype = {
         writer: 1,
-        reset: function(littleEndian) {
+        reset: function() {
             this._b = [];
             this._o = 0;
         },
@@ -143,14 +143,30 @@
     };
     var log = {
             verbosity: 4,
-            error: function(a) {if (log.verbosity <= 0) return; console.error(a)},
-            warn: function(a) {if (log.verbosity <= 1) return; console.warn(a)},
-            info: function(a) {if (log.verbosity <= 2) return; console.info(a)},
-            debug: function(a) {if (log.verbosity <= 3) return; console.debug(a)}
+            error: function(a) {
+                if (log.verbosity <= 0) return;
+                console.error(a);
+            },
+            warn: function(a) {
+                if (log.verbosity <= 1) return;
+                console.warn(a);
+            },
+            info: function(a) {
+                if (log.verbosity <= 2) return;
+                console.info(a);
+            },
+            debug: function(a) {
+                if (log.verbosity <= 3) return;
+                console.debug(a);
+            }
         },
         WS_URL = null,
         SKIN_URL = "./skins/",
         USE_HTTPS = "https:" == wHandle.location.protocol,
+        CELL_POINTS_MIN = 5,
+        CELL_POINTS_MAX = 120,
+        VIRUS_POINTS = 100,
+        PI_2 = Math.PI * 2,
         UINT8_254 = new Uint8Array([254, 6, 0, 0, 0]),
         UINT8_255 = new Uint8Array([255, 1, 0, 0, 0]),
         UINT8 = {
@@ -181,6 +197,133 @@
             42: new Uint8Array([42]),
             43: new Uint8Array([43]),
             254: new Uint8Array([254])
+        },
+        cells = Object.create({
+            mine: [],
+            byId: {},
+            list: [],
+        }),
+        border = Object.create({
+            left: -2000,
+            right: 2000,
+            top: -2000,
+            bottom: 2000,
+            width: 4000,
+            height: 4000,
+            centerX: -1,
+            centerY: -1
+        }),
+        leaderboard = Object.create({
+            type: NaN,
+            items: null,
+            canvas: document.createElement("canvas"),
+            teams: ["#F33", "#3F3", "#33F"]
+        }),
+        chat = Object.create({
+            messages: [],
+            waitUntil: 0,
+            canvas: document.createElement("canvas"),
+            visible: 0,
+        }),
+        stats = Object.create({
+            framesPerSecond: 0,
+            latency: NaN,
+            supports: null,
+            info: null,
+            pingLoopId: NaN,
+            pingLoopStamp: null,
+            canvas: document.createElement("canvas"),
+            visible: 0,
+            score: NaN,
+            maxScore: 0
+        }),
+        ws = null,
+        WS_URL = null,
+        isConnected = 0,
+        disconnectDelay = 1000,
+        syncUpdStamp = Date.now(),
+        syncAppStamp = Date.now(),
+        mainCanvas = null,
+        mainCtx = null,
+        loadedSkins = {},
+        overlayShown = 0,
+        isTyping = 0,
+        chatBox = null,
+        mapCenterSet = 0,
+        camera = {
+            x: 0,
+            y: 0,
+            z: 1,
+            target: {
+                x: 0,
+                y: 0,
+                z: 1
+            },
+            viewMult
+        },
+        mouse = {
+            x: NaN,
+            y: NaN,
+            z: 1
+        },
+        cameraX = 0,
+        cameraY = 0,
+        cameraZ = 1,
+        cameraZInvd = 1,
+        targetX = 0,
+        targetY = 0,
+        targetZ = 1,
+        viewMult = 1,
+        mouseX = NaN,
+        mouseY = NaN,
+        mouseZ = 1,
+        settings = {
+            mobile: "createTouch" in document,
+            showMass: 0,
+            showNames: 1,
+            hideChat: 0,
+            showTextOutline: 1,
+            showColor: 1,
+            showSkins: 1,
+            showMinimap: 1,
+            darkTheme: 0,
+            hideGrid: 0,
+            cellBorders: 1,
+            infiniteZoom: 0,
+            transparency: 0,
+            mapBorders: 0,
+            sectors: 0,
+            showPos: 0,
+            hideFood: 0,
+            jellyPhysics: 0,
+            allowGETipSet: 0
+        },
+        pressed = {
+            space: 0,
+            w: 0,
+            e: 0,
+            r: 0,
+            t: 0,
+            p: 0,
+            q: 0,
+            o: 0,
+            m: 0,
+            i: 0,
+            y: 0,
+            u: 0,
+            k: 0,
+            l: 0,
+            h: 0,
+            z: 0,
+            x: 0,
+            s: 0,
+            c: 0,
+            g: 0,
+            j: 0,
+            b: 0,
+            v: 0,
+            n: 0,
+            esc: 0
         };
     function wsCleanup() {
         if (!ws) return;
@@ -224,7 +367,7 @@
             if (ws && ws.readyState === 1) return;
             wsInit(WS_URL);
         }, disconnectDelay *= 1.5);
-        console.log("Socket closed");
+        console.log("Socket closed.");
     }
     function wsSend(data) {
         if (!ws) return;
@@ -438,132 +581,21 @@
         cameraZ = targetZ = 1;
         mapCenterSet = 0;
     }
-    var cells = Object.create({
-            mine: [],
-            byId: {},
-            list: [],
-        }),
-        border = Object.create({
-            left: -2000,
-            right: 2000,
-            top: -2000,
-            bottom: 2000,
-            width: 4000,
-            height: 4000,
-            centerX: -1,
-            centerY: -1
-        }),
-        leaderboard = Object.create({
-            type: NaN,
-            items: null,
-            canvas: document.createElement("canvas"),
-            teams: ["#F33", "#3F3", "#33F"]
-        }),
-        chat = Object.create({
-            messages: [],
-            waitUntil: 0,
-            canvas: document.createElement("canvas"),
-            visible: 0,
-        }),
-        stats = Object.create({
-            framesPerSecond: 0,
-            latency: NaN,
-            supports: null,
-            info: null,
-            pingLoopId: NaN,
-            pingLoopStamp: null,
-            canvas: document.createElement("canvas"),
-            visible: 0,
-            score: NaN,
-            maxScore: 0
-        }),
-        ws = null,
-        WS_URL = null,
-        isConnected = 0,
-        disconnectDelay = 1000,
-        syncUpdStamp = Date.now(),
-        syncAppStamp = Date.now(),
-        mainCanvas = null,
-        mainCtx = null,
-        loadedSkins = {},
-        overlayShown = 0,
-        isTyping = 0,
-        chatBox = null,
-        mapCenterSet = 0,
-        cameraX = 0,
-        cameraY = 0,
-        cameraZ = 1,
-        cameraZInvd = 1,
-        targetX = 0,
-        targetY = 0,
-        targetZ = 1,
-        viewMult = 1,
-        mouseX = NaN,
-        mouseY = NaN,
-        mouseZ = 1,
-        settings = {
-            mobile: "createTouch" in document,
-            showMass: 0,
-            showNames: 1,
-            hideChat: 0,
-            showTextOutline: 1,
-            showColor: 1,
-            showSkins: 1,
-            showMinimap: 1,
-            darkTheme: 0,
-            hideGrid: 0,
-            cellBorders: 1,
-            infiniteZoom: 0,
-            transparency: 0,
-            mapBorders: 0,
-            sectors: 0,
-            showPos: 0,
-            hideFood: 0,
-            allowGETipSet: 0
-        },
-        pressed = {
-            space: 0,
-            w: 0,
-            e: 0,
-            r: 0,
-            t: 0,
-            p: 0,
-            q: 0,
-            o: 0,
-            m: 0,
-            i: 0,
-            y: 0,
-            u: 0,
-            k: 0,
-            l: 0,
-            h: 0,
-            z: 0,
-            x: 0,
-            s: 0,
-            c: 0,
-            g: 0,
-            j: 0,
-            b: 0,
-            v: 0,
-            n: 0,
-            esc: 0
-        };
-    if (null !== wHandle.localStorage)
-        wjQuery(window).load(function() {
-            wjQuery(".save").each(function() {
-                var id = wjQuery(this).data("box-id"),
-                    value = wHandle.localStorage.getItem("checkbox-" + id);
-                if (value && value == "1" && 0 != id) {
-                    wjQuery(this).prop("checked", "1");
-                    wjQuery(this).trigger("change");
-                } else if (id == 0 && value != null) wjQuery(this).val(value);
-            });
-            wjQuery(".save").change(function() {
-                var id = wjQuery(this).data("box-id"),
-                    value = (id == 0) ? wjQuery(this).val() : wjQuery(this).prop("checked");
-                wHandle.localStorage.setItem("checkbox-" + id, value);
-            });
+    if (null !== wHandle.localStorage) wjQuery(window).load(function() {
+        wjQuery(".save").each(function() {
+            var id = wjQuery(this).data("box-id"),
+                value = wHandle.localStorage.getItem("checkbox-" + id);
+            if (value && value == "1" && 0 != id) {
+                wjQuery(this).prop("checked", "1");
+                wjQuery(this).trigger("change");
+            } else if (id == 0 && value != null) wjQuery(this).val(value);
         });
+        wjQuery(".save").change(function() {
+            var id = wjQuery(this).data("box-id"),
+                value = (id == 0) ? wjQuery(this).val() : wjQuery(this).prop("checked");
+            wHandle.localStorage.setItem("checkbox-" + id, value);
+        });
+    });
     function hideOverlay() {
         overlayShown = 0;
         wjQuery("#overlays").fadeOut(200);
@@ -686,7 +718,7 @@
                 ctx.fillStyle = leaderboard.teams[i];
                 ctx.beginPath();
                 ctx.moveTo(125, 140);
-                ctx.arc(125, 140, 80, last, (last += leaderboard.items[i] * Math.PI * 2), 0);
+                ctx.arc(125, 140, 80, last, (last += leaderboard.items[i] * PI_2), 0);
                 ctx.closePath();
                 ctx.fill();
             }
@@ -732,7 +764,7 @@
         mainCtx.stroke();
         mainCtx.restore();
     }
-    function drawBorders() { // Rendered unusable when a server has coordinate scrambling enabled.
+    function drawBorders() { // Rendered unusable when a server has coordinate scrambling enabled
         if (!isConnected || border.centerX !== 0 || border.centerY !== 0 || !settings.mapBorders) return;
         mainCtx.save();
         mainCtx.strokeStyle = '#F00';
@@ -748,7 +780,7 @@
         mainCtx.stroke();
         mainCtx.restore();
     }
-    function drawSectors() { // Rendered unusable when a server has coordinate scrambling enabled.
+    function drawSectors() { // Rendered unusable when a server has coordinate scrambling enabled
         if (!isConnected || border.centerX !== 0 || border.centerY !== 0 || !settings.sectors) return;
         var x = border.left + 65,
             y = border.bottom - 65,
@@ -771,8 +803,7 @@
         mainCtx.restore();
         mainCtx.stroke();
     }
-    function drawMinimap() {
-        // Rendered unusable when a server has coordinate scrambling enabled.
+    function drawMinimap() { // Rendered unusable when a server has coordinate scrambling enabled
         if (!isConnected || border.centerX !== 0 ||
             border.centerY !== 0 || !settings.showMinimap) return;
         mainCtx.save();
@@ -814,15 +845,14 @@
                     x = beginX + (cell.x + halfWidth) * scaleX;
                     y = beginY + (cell.y + halfHeight) * scaleY;
                     mainCtx.moveTo(x + cell.s * scaleX, y);
-                    mainCtx.arc(x, y, cell.s * scaleX, 0, Math.PI * 2);
+                    mainCtx.arc(x, y, cell.s * scaleX, 0, PI_2);
                 }
             }
         } else {
             mainCtx.fillStyle = "#FFF";
-            mainCtx.arc(posX, posY, 5, 0, Math.PI * 2);
+            mainCtx.arc(posX, posY, 5, 0, PI_2);
         }
         mainCtx.fill();
-        // Draw name above user's position if he has a cell on the screen
         cell = null;
         for (var i = 0, l = cells.mine.length; i < l; i++) {
             if (cells.byId.hasOwnProperty(cells.mine[i])) {
@@ -843,6 +873,12 @@
         var drawList = cells.list.slice(0).sort(cellSort);
         for (var i = 0; i < drawList.length; i++) drawList[i].update(syncAppStamp);
         cameraUpdate();
+        if (settings.jellyPhysics)
+            for (var i = 0; i < drawList.length; i++) {
+                var cell = drawList[i];
+                cell.updateNumPoints();
+                cell.movePoints();
+            }
         mainCtx.save();
         mainCtx.fillStyle = settings.darkTheme ? "#111" : "#F2FBFF";
         mainCtx.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
@@ -894,25 +930,25 @@
     function cameraUpdate() {
         var myCells = [];
         for (var i = 0; i < cells.mine.length; i++)
-            if (cells.byId.hasOwnProperty(cells.mine[i]))
-                myCells.push(cells.byId[cells.mine[i]]);
+            if (cells.byId.hasOwnProperty(cells.mine[i])) myCells.push(cells.byId[cells.mine[i]]);
         if (myCells.length > 0) {
             var x = 0,
                 y = 0,
                 s = 0,
-                score = 0;
-            for (var i = 0, l = myCells.length; i < l; i++) {
+                score = 0,
+                len = myCells.length;
+            for (var i = 0; i < len; i++) {
                 var cell = myCells[i];
                 score += ~~(cell.ns * cell.ns / 100);
                 x += cell.x;
                 y += cell.y;
                 s += cell.s;
             }
-            targetX = x / l;
-            targetY = y / l;
+            targetX = x / len;
+            targetY = y / len;
             targetZ = Math.pow(Math.min(64 / s, 1), .4);
-            cameraX += (targetX - cameraX) / 2;
-            cameraY += (targetY - cameraY) / 2;
+            cameraX = (targetX + cameraX) / 2;
+            cameraY = (targetY + cameraY) / 2;
             stats.score = score;
             stats.maxScore = Math.max(stats.maxScore, score);
         } else {
@@ -936,6 +972,8 @@
         this.ejected = !!(flags & 0x20);
         this.food = !!(flags & 0x80); // For my server
         this.born = syncUpdStamp;
+        this.points = [];
+        this.pointsVel = [];
     }
     Cell.prototype = {
         destroyed: 0,
@@ -967,7 +1005,8 @@
             if (killerId && !this.diedBy) this.diedBy = killerId;
         },
         update: function(relativeTime) {
-            var dt = (relativeTime - this.updated) / 120;
+            var dt = (relativeTime - this.updated) / 120,
+                prevFrameSize = this.s;
             dt = Math.max(Math.min(dt, 1), 0);
             if (this.destroyed && Date.now() > this.dead + 200) cells.list.remove(this);
             else if (this.diedBy && cells.byId.hasOwnProperty(this.diedBy)) {
@@ -979,6 +1018,68 @@
             this.s = this.os + (this.ns - this.os) * dt;
             this.nameSize = ~~(~~(Math.max(~~(.3 * this.ns), 24)) / 3) * 3;
             this.drawNameSize = ~~(~~(Math.max(~~(.3 * this.s), 24)) / 3) * 3;
+            if (settings.jellyPhysics && this.points.length) {
+                var ratio = this.s / prevFrameSize;
+                if (this.ns != this.os && ratio != 1)
+                    for (var i = 0; i < this.points.length; i++) this.points[i].rl *= ratio;
+            }
+        },
+        updateNumPoints: function() {
+            var numPoints = Math.min(Math.max(this.s * cameraZ | 0, CELL_POINTS_MIN), CELL_POINTS_MAX);
+            if (this.jagged) numPoints = VIRUS_POINTS;
+            while (this.points.length > numPoints) {
+                var i = Math.random() * this.points.length | 0;
+                this.points.splice(i, 1);
+                this.pointsVel.splice(i, 1);
+            }
+            if (this.points.length === 0 && numPoints !== 0) {
+                this.points.push({
+                    x: this.x,
+                    y: this.y,
+                    rl: this.s,
+                    parent: this,
+                });
+                this.pointsVel.push(Math.random() - .5);
+            }
+            while (this.points.length < numPoints) {
+                var i = Math.random() * this.points.length | 0,
+                    point = this.points[i],
+                    vel = this.pointsVel[i];
+                this.points.splice(i, 0, {
+                    x: point.x,
+                    y: point.y,
+                    rl: point.rl,
+                    parent: this
+                });
+                this.pointsVel.splice(i, 0, vel);
+            }
+        },
+        movePoints: function() {
+            var pointsVel = this.pointsVel.slice();
+            for (var i = 0; i < this.points.length; ++i) {
+                var prevVel = pointsVel[(i - 1 + this.points.length) % this.points.length],
+                    nextVel = pointsVel[(i + 1) % this.points.length],
+                    newVel = Math.max(Math.min((this.pointsVel[i] + Math.random() - .5) * .7, 10), -10);
+                this.pointsVel[i] = (prevVel + nextVel + 8 * newVel) / 10;
+            }
+            for (var i = 0; i < this.points.length; ++i) {
+                var curP = this.points[i],
+                    prevRl = this.points[(i - 1 + this.points.length) % this.points.length].rl,
+                    nextRl = this.points[(i + 1) % this.points.length].rl,
+                    curRl = curP.rl,
+                    affected = false;
+                if (!affected && (curP.x < border.left || curP.y < border.top || curP.x > border.right || curP.y > border.bottom)) affected = true;
+                if (affected) this.pointsVel[i] = Math.min(this.pointsVel[i], 0) - 1;
+                curRl += this.pointsVel[i];
+                curRl = Math.max(curRl, 0);
+                curRl = (9 * curRl + this.s) / 10;
+                curP.rl = (prevRl + nextRl + 8 * curRl) / 10;
+                var angle = 2 * Math.PI * i / this.points.length,
+                    rl = curP.rl;
+                if (this.jagged && i % 2 === 0) rl += 5;
+                curP.x = this.x + Math.cos(angle) * rl;
+                curP.y = this.y + Math.sin(angle) * rl;
+            }
         },
         setName: function(value) {
             var nameSkin = /\{([\w\W]+)\}/.exec(value);
@@ -1014,17 +1115,22 @@
             var showCellBorder = settings.cellBorders && !this.food && !this.ejected && 20 < this.s;
             if (showCellBorder) this.s -= ctx.lineWidth / 2 - 2;
             ctx.beginPath();
-            if (this.jagged) {
-                var points = this.s;
-                var increment = Math.PI * 2 / points;
+            if (settings.jellyPhysics && this.points.length) {
+                ctx.lineJoin = "miter";
+                var point = this.points[0];
+                ctx.moveTo(point.x, point.y);
+                for (var i = 0; i < this.points.length; i++) ctx.lineTo(this.points[i].x, this.points[i].y);
+            } else if (this.jagged) {
+                var points = this.s,
+                    increment = PI_2 / points;
                 ctx.moveTo(this.x, this.y + this.s + 3);
                 for (var i = 1; i < points; i++) {
-                    var angle = i * increment;
-                    var dist = this.s - 3 + (i % 2 === 0) * 6;
+                    var angle = i * increment,
+                        dist = this.s - 3 + (i % 2 === 0) * 6;
                     ctx.lineTo(this.x + dist * Math.sin(angle), this.y + dist * Math.cos(angle));
                 }
                 ctx.lineTo(this.x, this.y + this.s + 3);
-            } else ctx.arc(this.x, this.y, this.s, 0, Math.PI * 2, 0);
+            } else ctx.arc(this.x, this.y, this.s, 0, PI_2, false);
             ctx.closePath();
             if (settings.transparency) ctx.globalAlpha = .75;
             else if (this.destroyed) ctx.globalAlpha = Math.max(200 - Date.now() + this.dead, 0) / 100;
@@ -1038,6 +1144,7 @@
                     ctx.clip();
                     scaleBack(ctx);
                     var sScaled = this.s * cameraZ;
+                    if (settings.jellyPhysics) sScaled += 2;
                     ctx.drawImage(skin, this.x * cameraZ - sScaled, this.y * cameraZ - sScaled, sScaled *= 2, sScaled);
                     scaleForth(ctx);
                     ctx.restore();
@@ -1188,8 +1295,8 @@
         mainCanvas.focus();
         function handleScroll(event) {
             mouseZ *= Math.pow(.95, event.wheelDelta / -120 || event.detail || 0);
-            settings.infiniteZoom || (1 > mouseZ && (mouseZ = 1));
-            mouseZ > 4 / mouseZ && (mouseZ = 4 / mouseZ);
+            if (!settings.infiniteZoom && mouseZ < 1) mouseZ = 1;
+            if (mouseZ > 4 / mouseZ) mouseZ = 4 / mouseZ;
         }
         if (/firefox/i.test(navigator.userAgent)) document.addEventListener("DOMMouseScroll", handleScroll, 0);
         else document.body.onmousewheel = handleScroll;
@@ -1496,6 +1603,9 @@
     };
     wHandle.setFood = function(arg) {
         settings.hideFood = arg;
+    };
+    wHandle.setJelly = function(arg) {
+        settings.jellyPhysics = arg;
     };
     wHandle.spectate = function() {
         wsSend(UINT8[1]);
