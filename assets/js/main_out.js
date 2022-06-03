@@ -416,7 +416,7 @@
                     killed = reader.getUint32();
                     let _cell = cells.byId.get(killed);
                     if (!cells.byId.has(killer) || !cells.byId.has(killed)) continue;
-                    if (soundsVolume.value && syncUpdStamp - _cell.born > 100 && cells.mine.includes(killer)) (_cell.s < 20 ? pelletSound : eatSound).play(parseFloat(soundsVolume.value));
+                    if (soundsVolume.value && cells.mine.includes(killer) && syncUpdStamp - _cell.born > 100) (_cell.s < 20 ? pelletSound : eatSound).play(parseFloat(soundsVolume.value));
                     _cell.destroy(killer);
                 }
                 // Update records
