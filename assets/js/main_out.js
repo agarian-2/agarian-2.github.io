@@ -1112,12 +1112,12 @@
             let showCellBorder = settings.cellBorders && !this.food && !this.ejected && 20 < this.s;
             if (showCellBorder) this.s -= ctx.lineWidth / 2 - 2;
             ctx.beginPath();
+            if (this.jagged) ctx.lineJoin = "miter";
             if (settings.jellyPhysics && this.points.length) {
-                ctx.lineJoin = "miter";
                 let point = this.points[0];
                 ctx.moveTo(point.x, point.y);
                 for (let i = 0; i < this.points.length; i++) ctx.lineTo(this.points[i].x, this.points[i].y);
-            } else if (this.jagged) {
+            }/* else if (this.jagged) {
                 let points = this.s,
                     increment = PI_2 / points;
                 ctx.moveTo(this.x, this.y + this.s + 3);
@@ -1127,7 +1127,7 @@
                     ctx.lineTo(this.x + dist * Math.sin(angle), this.y + dist * Math.cos(angle));
                 }
                 ctx.lineTo(this.x, this.y + this.s + 3);
-            } else ctx.arc(this.x, this.y, this.s, 0, PI_2, false);
+            } else*/ ctx.arc(this.x, this.y, this.s, 0, PI_2, false);
             ctx.closePath();
             if (settings.transparency) ctx.globalAlpha = .75;
             else if (this.destroyed) ctx.globalAlpha = Math.max(200 - Date.now() + this.dead, 0) / 100;
