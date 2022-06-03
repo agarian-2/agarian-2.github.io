@@ -1117,8 +1117,8 @@
                 let point = this.points[0];
                 ctx.moveTo(point.x, point.y);
                 for (let i = 0; i < this.points.length; i++) ctx.lineTo(this.points[i].x, this.points[i].y);
-            }/* else if (this.jagged) {
-                let points = this.s,
+            } else if (this.jagged) {
+                let points = 100,
                     increment = PI_2 / points;
                 ctx.moveTo(this.x, this.y + this.s + 3);
                 for (let i = 1; i < points; i++) {
@@ -1127,7 +1127,7 @@
                     ctx.lineTo(this.x + dist * Math.sin(angle), this.y + dist * Math.cos(angle));
                 }
                 ctx.lineTo(this.x, this.y + this.s + 3);
-            } else*/ ctx.arc(this.x, this.y, this.s, 0, PI_2, false);
+            } else ctx.arc(this.x, this.y, this.s, 0, PI_2, false);
             ctx.closePath();
             if (settings.transparency) ctx.globalAlpha = .75;
             else if (this.destroyed) ctx.globalAlpha = Math.max(200 - Date.now() + this.dead, 0) / 100;
