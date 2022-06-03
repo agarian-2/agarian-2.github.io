@@ -72,24 +72,24 @@
                         <br clear="both" />
                     </div>
                     <div style="margin: 6px;">
-                        <label><input type="checkbox" class="save" data-box-id="1" onchange="setSkins(!$(this).is(':checked'));"> Hide Skins</label>
-                        <label><input type="checkbox" class="save" data-box-id="2" onchange="setNames(!$(this).is(':checked'));"> Hide Names</label>
-                        <label><input type="checkbox" class="save" data-box-id="4" onchange="setColors($(this).is(':checked'));"> Hide Colors</label>
-                        <label><input type="checkbox" class="save" data-box-id="7" onchange="setChatHide($(this).is(':checked'));"> Hide Chat</label>
-                        <label><input type="checkbox" class="save" data-box-id="8" onchange="setMinimap($(this).is(':checked'));"> Hide Minimap</label>
-                        <label><input type="checkbox" class="save" data-box-id="10" onchange="setGrid($(this).is(':checked'));"> Hide Grid</label>
-                        <label><input type="checkbox" class="save" data-box-id="17" onchange="setFood($(this).is(':checked'));"> Hide Food</label>
-                        <label><input type="checkbox" class="save" data-box-id="13" onchange="setStats($(this).is(':checked'));"> Hide Stats</label>
-                        <label><input type="checkbox" class="save" data-box-id="5" onchange="setShowMass($(this).is(':checked'));"> Show Mass</label>
-                        <label><input type="checkbox" class="save" data-box-id="3" onchange="setDarkTheme($(this).is(':checked'));"> Dark Theme</label>
-                        <label><input type="checkbox" class="save" data-box-id="9" onchange="setCellBorder($(this).is(':checked'));" checked> Cell Borders</label>
-                        <label><input type="checkbox" class="save" data-box-id="18" onchange="setJelly($(this).is(':checked'));"> Jelly Physics</label>
-                        <label><input type="checkbox" class="save" data-box-id="16" onchange="setTextOutline($(this).is(':checked'));" checked> Text Outline</label>
-                        <label><input type="checkbox" class="save" data-box-id="11" onchange="setZoom($(this).is(':checked'));"> Infinite Zoom</label>
-                        <label><input type="checkbox" class="save" data-box-id="12" onchange="setTransparency($(this).is(':checked'));"> Transparent</label>
-                        <label><input type="checkbox" class="save" data-box-id="14" onchange="setMapBorders($(this).is(':checked'));"> Map Borders</label>
-                        <label><input type="checkbox" class="save" data-box-id="15" onchange="setSectors($(this).is(':checked'));"> Map Sectors</label>
-                        <label><input type="checkbox" class="save" data-box-id="16" onchange="setCellPos($(this).is(':checked'));"> Cell Position</label>
+                        <label><input type="checkbox" class="save" data-box-id="1" onchange="setSkins(!$(this).is(':checked'));">Hide Skins</label>
+                        <label><input type="checkbox" class="save" data-box-id="2" onchange="setNames(!$(this).is(':checked'));">Hide Names</label>
+                        <label><input type="checkbox" class="save" data-box-id="4" onchange="setColors($(this).is(':checked'));">Hide Colors</label>
+                        <label><input type="checkbox" class="save" data-box-id="7" onchange="setChatHide($(this).is(':checked'));">Hide Chat</label>
+                        <label><input type="checkbox" class="save" data-box-id="8" onchange="setMinimap($(this).is(':checked'));">Hide Minimap</label>
+                        <label><input type="checkbox" class="save" data-box-id="10" onchange="setGrid($(this).is(':checked'));">Hide Grid</label>
+                        <label><input type="checkbox" class="save" data-box-id="17" onchange="setFood($(this).is(':checked'));">Hide Food</label>
+                        <label><input type="checkbox" class="save" data-box-id="13" onchange="setStats($(this).is(':checked'));">Hide Stats</label>
+                        <label><input type="checkbox" class="save" data-box-id="5" onchange="setShowMass($(this).is(':checked'));">Show Mass</label>
+                        <label><input type="checkbox" class="save" data-box-id="3" onchange="setDarkTheme($(this).is(':checked'));">Dark Theme</label>
+                        <label><input type="checkbox" class="save" data-box-id="9" onchange="setCellBorder($(this).is(':checked'));" checked>Cell Borders</label>
+                        <label><input type="checkbox" class="save" data-box-id="18" onchange="setJelly($(this).is(':checked'));">Jelly Physics</label>
+                        <label><input type="checkbox" class="save" data-box-id="16" onchange="setTextOutline($(this).is(':checked'));" checked>Text Outline</label>
+                        <label><input type="checkbox" class="save" data-box-id="11" onchange="setZoom($(this).is(':checked'));">Infinite Zoom</label>
+                        <label><input type="checkbox" class="save" data-box-id="12" onchange="setTransparency($(this).is(':checked'));">Transparent</label>
+                        <label><input type="checkbox" class="save" data-box-id="14" onchange="setMapBorders($(this).is(':checked'));">Map Borders</label>
+                        <label><input type="checkbox" class="save" data-box-id="15" onchange="setSectors($(this).is(':checked'));">Map Sectors</label>
+                        <label><input type="checkbox" class="save" data-box-id="16" onchange="setCellPos($(this).is(':checked'));">Cell Position</label>
                         <!--add hide stats option later-->
                         <p> </p>
                         <table>
@@ -111,6 +111,12 @@
                                 <td>
                                     <label>Cell Border Size</label>
                                     <input class="form-control" id="cellBorderSize" placeholder="Default = 0 | Max = 50" value="" type="number" min="1" max="50" style="width:180px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label>Sound Volume</label>
+                                    <input class="form-control" id="soundsVolume" placeholder="Default = 0.5 | Max = 1" value="" step="0.1" type="number" min="0" max="1" style="width:180px;">
                                 </td>
                             </tr>
                         </table>
@@ -135,11 +141,9 @@
             <div id="footer">
                 <hr/>
                 <!--p><b>Important Links:</b></p-->
-                <a href="https://github.com/OgarProject/Ogar" class="text-muted" target="_blank">GitHub - Ogar Project</a><br>
                 <a href="https://github.com/Barbosik/MultiOgar" class="text-muted" target="_blank">GitHub - MultiOgar</a><br>
-                <a href="https://github.com/Megabyte918/MultiOgar-Edited" class="text-muted" target="_blank">GitHub - MultiOgar Edited</a><br>
-                <a href="https://github.com/CigarProject/Cigar" class="text-muted" target="_blank">GitHub - CigarProject</a><br>
-                <a href="https://github.com/Agarian/Ogar-unlimited" class="text-muted" target="_blank">GitHub - Ogar Unlimited</a>
+                <a href="https://github.com/Megabyte918/MultiOgar-Edited" class="text-muted" target="_blank">GitHub - MultiOgar-Edited</a><br>
+                <a href="https://github.com/Cigar2/Cigar2" class="text-muted" target="_blank">GitHub - CigarProject</a><br>
             </div>
         </div>
     </div>
