@@ -8,6 +8,26 @@
         const i = this.indexOf(a);
         return i !== -1 && this.splice(i, 1);
     }
+    class Sound {
+        constructor(src, volume, maximum) {
+            this.src = src;
+            this.volume = typeof volume === "number" ? volume : 0.5;
+            this.maximum = typeof maximum === "number" ? maximum : Infinity;
+            this.elms = [];
+        }
+        play(vol) {
+            if (typeof vol === "number") this.volume = vol;
+            let toPlay = this.elms.find((elm) => elm.paused) ?? this.add();
+            toPlay.volume = this.volume;
+            toPlay.play();
+        }
+        add() {
+            if (this.elms.length >= this.maximum) return this.elms[0];
+            let elm = new Audio(this.src);
+            this.elms.push(elm);
+            return elm;
+        }
+    }
     function bytesToColor(r, g, b) {
         let r1 = ("00" + (~~r).toString(16)).slice(-2),
             g1 = ("00" + (~~g).toString(16)).slice(-2),
@@ -241,6 +261,7 @@
         syncAppStamp = Date.now(),
         mainCanvas = null,
         mainCtx = null,
+        soundsVolume,
         loadedSkins = {},
         overlayShown = 0,
         isTyping = 0,
@@ -265,25 +286,25 @@
         },
         settings = {
             mobile: "createTouch" in document,
-            showSkins: 1,
-            showNames: 1,
-            showColor: 1,
-            hideChat: 0,
-            showMinimap: 1,
-            hideGrid: 0,
-            hideFood: 0,
-            hideStats: 0,
-            showMass: 0,
-            darkTheme: 0,
-            cellBorders: 1,
-            jellyPhysics: 0,
-            showTextOutline: 1,
-            infiniteZoom: 0,
-            transparency: 0,
-            mapBorders: 0,
-            sectors: 0,
-            showPos: 0,
-            allowGETipSet: 0
+            showSkins: true,
+            showNames: true,
+            showColor: true,
+            hideChat: false,
+            showMinimap: true,
+            hideGrid: false,
+            hideFood: false,
+            hideStats: false,
+            showMass: false,
+            darkTheme: false,
+            cellBorders: true,
+            jellyPhysics: false,
+            showTextOutline: true,
+            infiniteZoom: false,
+            transparency: false,
+            mapBorders: false,
+            sectors: false,
+            showPos: false,
+            allowGETipSet: false
         },
         pressed = {
             space: 0,
@@ -311,7 +332,9 @@
             v: 0,
             n: 0,
             esc: 0
-        };
+        },
+        eatSound = new Sound("./assets/sound/eat.mp3", .5, 10),
+        pelletSound = new Sound("./assets/sound/pellet.mp3", .5, 10);
     function wsCleanup() {
         if (!ws) return;
         log.debug("WS cleanup triggered!");
@@ -391,8 +414,9 @@
                 for (let i = 0; i < count; i++) {
                     killer = reader.getUint32();
                     killed = reader.getUint32();
-                    if (!cells.byId.hasOwnProperty(killer) || !cells.byId.hasOwnProperty(killed)) continue;
-                    cells.byId[killed].destroy(killer);
+                    if (!cells.byId.has(killer) || !cells.byId.has(killed)) continue;
+                    if (soundsVolume.value && cells.mine.includes(killer)) (cells.byId.get(killed).s < 20 ? pelletSound : eatSound).play(parseFloat(soundsVolume.value));
+                    cells.byId.get(killed).destroy(killer);
                 }
                 // Update records
                 while (true) {
@@ -408,8 +432,8 @@
                     color = updColor ? bytesToColor(reader.getUint8(), reader.getUint8(), reader.getUint8()) : null;
                     skin = updSkin ? reader.getStringUTF8() : null;
                     name = updName ? reader.getStringUTF8() : null;
-                    if (cells.byId.hasOwnProperty(id)) {
-                        cell = cells.byId[id];
+                    if (cells.byId.has(id)) {
+                        cell = cells.byId.get(id);
                         cell.update(syncUpdStamp);
                         cell.updated = syncUpdStamp;
                         cell.ox = cell.x;
@@ -423,7 +447,7 @@
                         if (name) cell.setName(name);
                     } else {
                         cell = new Cell(id, x, y, s, name, color, skin, flags);
-                        cells.byId[id] = cell;
+                        cells.byId.set(id, cell);
                         cells.list.push(cell);
                     }
                 }
@@ -431,7 +455,7 @@
                 count = reader.getUint16();
                 for (let i = 0; i < count; i++) {
                     killed = reader.getUint32();
-                    if (cells.byId.hasOwnProperty(killed) && !cells.byId[killed].destroyed) cells.byId[killed].destroy(null);
+                    if (cells.byId.has(killed) && !cells.byId.get(killed).destroyed) cells.byId.get(killed).destroy(null);
                 }
                 break;
             case 0x11: // Update position
@@ -440,7 +464,7 @@
                 target.z = reader.getFloat32();
                 break;
             case 0x12: // Clear all
-                for (let i in cells.byId) cells.byId[i].destroy(null);
+                for (let cell of cells.byId.values()) cell.destroy(null);
             case 0x14: // Clear my cells
                 cells.mine = [];
                 break;
@@ -563,7 +587,7 @@
         chat.messages = [];
         leaderboard.items = [];
         cells.mine = [];
-        cells.byId = {};
+        cells.byId = new Map();
         cells.list = [];
         camera.x = camera.y = target.x = target.y = 0;
         camera.z = target.z = 1;
@@ -573,14 +597,14 @@
         wjQuery(".save").each(function() {
             let id = wjQuery(this).data("box-id"),
                 value = wHandle.localStorage.getItem("checkbox-" + id);
-            if (value && value == "true" && 0 != id) {
+            if (value && value == "true" && id > 0) {
                 wjQuery(this).prop("checked", "true");
                 wjQuery(this).trigger("change");
-            } else if (id == 0 && value != null) wjQuery(this).val(value);
+            } else if (id < 1 && value != null) wjQuery(this).val(value);
         });
         wjQuery(".save").change(function() {
             let id = wjQuery(this).data("box-id"),
-                value = id == 0 ? wjQuery(this).val() : wjQuery(this).prop("checked");
+                value = id < 1 ? wjQuery(this).val() : wjQuery(this).prop("checked");
             wHandle.localStorage.setItem("checkbox-" + id, value);
         });
     });
@@ -794,8 +818,7 @@
         mainCtx.stroke();
     }
     function drawMinimap() { // Rendered unusable when a server has coordinate scrambling enabled
-        if (!isConnected || border.centerX !== 0 ||
-            border.centerY !== 0 || !settings.showMinimap) return;
+        if (!isConnected || border.centerX !== 0 || border.centerY !== 0 || !settings.showMinimap) return;
         mainCtx.save();
         let width = 200 * (border.width / border.height),
             height = 200 * (border.height / border.width),
@@ -829,9 +852,9 @@
         mainCtx.beginPath();
         if (cells.mine.length) {
             for (let i = 0; i < cells.mine.length; i++) {
-                let cell = cells.byId[cells.mine[i]];
+                let cell = cells.byId.get(cells.mine[i]);
                 if (cell) {
-                    mainCtx.fillStyle = settings.showColor ? cell.color : '#FFF';
+                    mainCtx.fillStyle = settings.showColor ? cell.color : "#FFF";
                     let x = beginX + (cell.x + halfWidth) * scaleX,
                         y = beginY + (cell.y + halfHeight) * scaleY;
                     mainCtx.moveTo(x + cell.s * scaleX, y);
@@ -843,12 +866,7 @@
             mainCtx.arc(posX, posY, 5, 0, PI_2);
         }
         mainCtx.fill();
-        let cell;
-        for (let i = 0; i < cells.mine.length; i++)
-            if (cells.byId.hasOwnProperty(cells.mine[i])) {
-                cell = cells.byId[cells.mine[i]];
-                break;
-            }
+        let cell = cells.byId.get(cells.mine.find(id => cells.byId.has(id)));
         if (cell) {
             mainCtx.fillStyle = settings.darkTheme ? "#DDD" : "#222";
             mainCtx.font = `${sectorNameSize}px Ubuntu`;
@@ -919,8 +937,10 @@
     }
     function cameraUpdate() {
         let myCells = [];
-        for (let i = 0; i < cells.mine.length; i++)
-            if (cells.byId.hasOwnProperty(cells.mine[i])) myCells.push(cells.byId[cells.mine[i]]);
+        for (let i = 0; i < cells.mine.length; i++) {
+            let cell = cells.byId.get(cells.mine[i]);
+            if (cell) myCells.push(cell);
+        }
         if (myCells.length > 0) {
             let x = 0,
                 y = 0,
@@ -973,7 +993,7 @@
             this.pointsVel = [];
         }
         destroy(killerId) {
-            delete cells.byId[this.id];
+            cells.byId.delete(this.id);
             if (cells.mine.remove(this.id) && !cells.mine.length) showOverlay();
             this.destroyed = 1;
             this.dead = syncUpdStamp;
@@ -981,12 +1001,13 @@
         }
         update(relativeTime) {
             let dt = (relativeTime - this.updated) / 120,
-                prevFrameSize = this.s;
+                prevFrameSize = this.s,
+                diedBy;
             dt = Math.max(Math.min(dt, 1), 0);
             if (this.destroyed && Date.now() > this.dead + 200) cells.list.remove(this);
-            else if (this.diedBy && cells.byId.hasOwnProperty(this.diedBy)) {
-                this.nx = cells.byId[this.diedBy].x;
-                this.ny = cells.byId[this.diedBy].y;
+            else if (this.diedBy && (diedBy = cells.byId.get(this.diedBy))) {
+                this.nx = diedBy.x;
+                this.ny = diedBy.y;
             }
             this.x = this.ox + (this.nx - this.ox) * dt;
             this.y = this.oy + (this.ny - this.oy) * dt;
@@ -1266,6 +1287,7 @@
         mainCanvas = document.getElementById("canvas");
         mainCtx = mainCanvas.getContext("2d");
         chatBox = document.getElementById("chat_textbox");
+        soundsVolume = document.getElementById("soundsVolume");
         mainCanvas.focus();
         function handleScroll(event) {
             mouse.z *= Math.pow(.95, event.wheelDelta / -120 || event.detail || 0);
