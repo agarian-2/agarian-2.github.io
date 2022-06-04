@@ -8,26 +8,6 @@
         const i = this.indexOf(a);
         return i !== -1 && this.splice(i, 1);
     }
-    class Sound {
-        constructor(src, volume, maximum) {
-            this.src = src;
-            this.volume = typeof volume === "number" ? volume : 0.5;
-            this.maximum = typeof maximum === "number" ? maximum : Infinity;
-            this.elms = [];
-        }
-        play(vol) {
-            if (typeof vol === "number") this.volume = vol;
-            let toPlay = this.elms.find((elm) => elm.paused) ?? this.add();
-            toPlay.volume = this.volume;
-            toPlay.play();
-        }
-        add() {
-            if (this.elms.length >= this.maximum) return this.elms[0];
-            let elm = new Audio(this.src);
-            this.elms.push(elm);
-            return elm;
-        }
-    }
     function bytesToColor(r, g, b) {
         let r1 = ("00" + (~~r).toString(16)).slice(-2),
             g1 = ("00" + (~~g).toString(16)).slice(-2),
@@ -174,6 +154,26 @@
         }
         debug(text) {
             if (this.verbosity > 3) console.debug(text);
+        }
+    }
+    class Sound {
+        constructor(src, volume, maximum) {
+            this.src = src;
+            this.volume = typeof volume === "number" ? volume : 0.5;
+            this.maximum = typeof maximum === "number" ? maximum : Infinity;
+            this.elms = [];
+        }
+        play(vol) {
+            if (typeof vol === "number") this.volume = vol;
+            let toPlay = this.elms.find((elm) => elm.paused) ?? this.add();
+            toPlay.volume = this.volume;
+            toPlay.play();
+        }
+        add() {
+            if (this.elms.length >= this.maximum) return this.elms[0];
+            let elm = new Audio(this.src);
+            this.elms.push(elm);
+            return elm;
         }
     }
     let log = new Logger(),
