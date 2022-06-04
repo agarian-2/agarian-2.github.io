@@ -351,7 +351,7 @@
             wsCleanup();
         }
         wjQuery("#connecting").show();
-        ws = new WebSocket(`ws${USE_HTTPS ? "" : ""}://${WS_URL = url}`);
+        ws = new WebSocket(`ws${USE_HTTPS && !url.includes("127.0.0.1") ? "s" : ""}://${WS_URL = url}`);
         ws.binaryType = "arraybuffer";
         ws.onopen = wsOpen;
         ws.onmessage = wsMessage;
