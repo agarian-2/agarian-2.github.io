@@ -179,7 +179,7 @@
     let log = new Logger(),
         SKIN_URL = "./skins/",
         USE_HTTPS = "https:" == wHandle.location.protocol,
-        CELL_POINTS_MIN = 20,
+        CELL_POINTS_MIN = 5,
         CELL_POINTS_MAX = 120,
         VIRUS_POINTS = 100,
         PI_2 = Math.PI * 2,
