@@ -1118,7 +1118,7 @@
                 ctx.moveTo(point.x, point.y);
                 for (let i = 0; i < this.points.length; i++) ctx.lineTo(this.points[i].x, this.points[i].y);
             } else if (this.jagged) {
-                let points = 100,
+                let points = this.s,
                     increment = PI_2 / points;
                 ctx.moveTo(this.x, this.y + this.s + 3);
                 for (let i = 1; i < points; i++) {
