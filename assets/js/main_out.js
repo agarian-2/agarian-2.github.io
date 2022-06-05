@@ -181,7 +181,6 @@
         USE_HTTPS = "https:" == wHandle.location.protocol,
         CELL_POINTS_MIN = 5,
         CELL_POINTS_MAX = 120,
-        VIRUS_POINTS = 100,
         PI_2 = Math.PI * 2,
         UINT8_254 = new Uint8Array([254, 6, 0, 0, 0]),
         UINT8_255 = new Uint8Array([255, 1, 0, 0, 0]),
@@ -1023,7 +1022,7 @@
         }
         updateNumPoints() {
             let numPoints = Math.min(Math.max(this.s * camera.z | 0, CELL_POINTS_MIN), CELL_POINTS_MAX);
-            if (this.jagged) numPoints = VIRUS_POINTS;
+            if (this.jagged) numPoints = Math.floor(this.s);
             while (this.points.length > numPoints) {
                 let i = Math.random() * this.points.length | 0;
                 this.points.splice(i, 1);
@@ -1118,7 +1117,7 @@
                 ctx.moveTo(point.x, point.y);
                 for (let i = 0; i < this.points.length; i++) ctx.lineTo(this.points[i].x, this.points[i].y);
             } else if (this.jagged) {
-                let points = this.s,
+                let points = Math.floor(this.s),
                     increment = PI_2 / points;
                 ctx.moveTo(this.x, this.y + this.s + 3);
                 for (let i = 1; i < points; i++) {
