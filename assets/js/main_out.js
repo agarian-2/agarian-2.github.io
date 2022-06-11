@@ -1106,8 +1106,7 @@
             ctx.fillStyle = settings.showColor ? this.color : Cell.prototype.color;
             let color = String($("#cellBorderColor").val());
             ctx.strokeStyle = color.length === 3 || color.length === 6 ? "#" + color : settings.showColor ? this.sColor : Cell.prototype.sColor;
-            let size = String($("#cellBorderSize").val());
-            ctx.lineWidth = this.jagged ? 12 : (!size || size > 50 ? Math.max(~~(this.s / 50), 10) : size);
+            ctx.lineWidth = this.jagged ? 12 : Math.max(~~(this.s / 50), 10);
             let showCellBorder = settings.cellBorders && !this.food && !this.ejected && 20 < this.s;
             if (showCellBorder) this.s -= ctx.lineWidth / 2 - 2;
             ctx.beginPath();
@@ -1140,7 +1139,7 @@
                     ctx.clip();
                     scaleBack(ctx);
                     let sScaled = this.s * camera.z;
-                    if (settings.jellyPhysics) sScaled += 2;
+                    if (settings.jellyPhysics) sScaled += 3;
                     ctx.drawImage(skin, this.x * camera.z - sScaled, this.y * camera.z - sScaled, sScaled *= 2, sScaled);
                     scaleForth(ctx);
                     ctx.restore();
