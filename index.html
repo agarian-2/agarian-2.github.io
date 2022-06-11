@@ -20,17 +20,7 @@
     <script src="assets/js/jquery-1.11.3.min.js"></script>
     <script src="assets/js/main_out.js"></script>
     <script>
-        // Macro W, shift, doublesplit
-        function keydown(e) {
-            if (e.keyCode === 16)
-                for (var i = 0; i < 5; i++) setTimeout(split, 50 * i);
-            if (e.keyCode === 65)
-                for (var j = 0; j < 3; j++) setTimeout(split, 50 * j);
-            if (e.keyCode === 68) {
-                split();
-                setTimeout(split, 50);
-            }
-        } /*global $*/
+        // Split macros
         function split() {
             $("body").trigger($.Event("keydown", {
                 keyCode: 32
@@ -38,6 +28,14 @@
             $("body").trigger($.Event("keyup", {
                 keyCode: 32
             }));
+        }
+        function keydown(e) {
+            if (e.keyCode === 16)
+                for (let i = 0; i < 5; i++) setTimeout(split, 50 * i);
+            if (e.keyCode === 65)
+                for (let i = 0; i < 3; i++) setTimeout(split, 50 * i);
+            if (e.keyCode === 68)
+                for (let i = 0; i < 2; i++) setTimeout(split, 50 * i);
         }
         window.addEventListener("keydown", keydown);
     </script>
@@ -108,12 +106,6 @@
                                     <label>Cell Border Color</label>
                                     <input class="form-control" id="cellBorderColor" placeholder="Default HEX = 000" value="" style="width:180px;">
                                 </td>
-                                <td>
-                                    <label>Cell Border Size</label>
-                                    <input class="form-control" id="cellBorderSize" placeholder="Default = 0 | Max = 50" value="" type="number" min="1" max="50" style="width:180px;">
-                                </td>
-                            </tr>
-                            <tr>
                                 <td>
                                     <label>Sound Volume</label>
                                     <input class="form-control" id="soundsVolume" placeholder="Default = 0.5 | Max = 1" value="" step="0.1" type="number" min="0" max="1" style="width:180px;">
