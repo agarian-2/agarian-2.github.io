@@ -37,14 +37,6 @@
             if (e.keyCode === 68)
                 for (let i = 0; i < 2; i++) setTimeout(split, 50 * i);
         }
-        function openSkinsList() {
-            if ($('#inPageModalTitle').text() != "Skins") {
-                $.get('include/gallery.php').then(function(data) {
-                    $('#inPageModalTitle').text("Skins");
-                    $('#inPageModalBody').html(data);
-                });
-            }
-        }
         window.addEventListener("keydown", keydown);
     </script>
 </head>
