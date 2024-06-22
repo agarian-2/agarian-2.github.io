@@ -6,7 +6,7 @@
             $skindir = "../skins/";
 
             # Skin directory relative to index.html
-            $skindirhtml = "./skins/";
+            $skindirhtml = "../skins/";
 
             $images = scandir($skindir);
 
