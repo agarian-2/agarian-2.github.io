@@ -3,10 +3,10 @@
     <ul>
         <?php
             # Skin directory relative to include/gallery.php (this file)
-            $skindir = "../skins/";
+            $skindir = "./skins/";
 
             # Skin directory relative to index.html
-            $skindirhtml = "../skins/";
+            $skindirhtml = "./skins/";
 
             $images = scandir($skindir);
 
