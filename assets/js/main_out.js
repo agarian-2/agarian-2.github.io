@@ -1608,6 +1608,13 @@
         stats.maxScore = 0;
         hideOverlay();
     };
+    wHandle.openSkinsList = function() {
+        if (wjQuery("#inPageModalTitle").text() === "Skins") return;
+        wjQuery.get("include/gallery.php").then(function(data) {
+            wjQuery("#inPageModalTitle").text("Skins");
+            wjQuery("#inPageModalBody").html(data);
+        });
+    };
     wHandle.play = function(arg) {
         sendPlay(arg);
         hideOverlay();
